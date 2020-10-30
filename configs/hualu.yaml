@@ -1,0 +1,57 @@
+# 数据集配置
+DATASET:
+    DATA_DIR: "/mnt/data/zyh/datasets/data/"
+    NUM_CLASSES: 20
+    TEST_FILE_LIST: "/mnt/data/zyh/datasets/data/test_list_baseline.txt"
+    TRAIN_FILE_LIST: "/mnt/data/zyh/datasets/data/train_list_baseline.txt"
+    VAL_FILE_LIST: "/mnt/data/zyh/datasets/data/val_list_baseline.txt"
+    VIS_FILE_LIST: "/mnt/data/zyh/datasets/data/test_list_baseline.txt"
+
+# 预训练模型配置
+MODEL:
+    MODEL_NAME: "hrnet"
+    DEFAULT_NORM_TYPE: "bn"
+    HRNET:
+        STAGE2:
+            NUM_CHANNELS: [48, 96]
+        STAGE3:
+            NUM_CHANNELS: [48, 96, 192]
+        STAGE4:
+            NUM_CHANNELS: [48, 96, 192, 384]
+
+# 其他配置
+TRAIN_CROP_SIZE: (512, 512)
+EVAL_CROP_SIZE: (512, 512)
+AUG:
+    AUG_METHOD: "unpadding"
+    FIX_RESIZE_SIZE: (512, 512)
+
+    MIRROR: True
+
+    RICH_CROP.ENABLE: True
+    RICH_CROP.BLUR: True
+    RICH_CROP.BLUR_RATIO: 0.2
+    RICH_CROP.BRIGHTNESS_JITTER_RATIO: 0.2
+    RICH_CROP.SATURATION_JITTER_RATIO: 0.2
+    RICH_CROP.CONTRAST_JITTER_RATIO: 0.2
+
+    # TRAIN_CROP_SIZE: (512, 512)
+    # EVAL_CROP_SIZE: (512, 512)
+
+BATCH_SIZE: 5
+TRAIN:
+    PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_cityscapes/"
+    MODEL_SAVE_DIR: "./saved_model/hrnet_optic/"
+    SNAPSHOT_EPOCH: 5
+    SYNC_BATCH_NORM: True
+TEST:
+    TEST_MODEL: "./saved_model/hrnet_optic/final"
+SOLVER:
+    NUM_EPOCHS: 100
+    LR: 0.001
+    LR_POLICY: "poly"
+    OPTIMIZER: "sgd"
+    LOSS: ["lovasz_softmax_loss","softmax_loss"]
+    LOSS_WEIGHT:
+        LOVASZ_SOFTMAX_LOSS: 0.2
+        SOFTMAX_LOSS: 0.8
