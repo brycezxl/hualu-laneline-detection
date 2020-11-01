@@ -49,7 +49,7 @@ def parse_args():
         '--cfg',
         dest='cfg_file',
         help='Config file for training (and optionally testing)',
-        default="../configs/zxl-hr48-14.yaml",
+        default="../configs/zxl-test.yaml",
         type=str)
     parser.add_argument(
         '--use_gpu',
@@ -222,6 +222,7 @@ def train(cfg):
 
     # Get number of GPU
     dev_count = cfg.NUM_TRAINERS if cfg.NUM_TRAINERS > 1 else len(places)
+    # dev_count = 1
     print_info("#Device count: {}".format(dev_count))
 
     # Make sure BATCH_SIZE can divided by GPU cards
@@ -420,14 +421,14 @@ def train(cfg):
                         mean_iou))
 
             # Use VisualDL to visualize results
-            if args.use_vdl and cfg.DATASET.VIS_FILE_LIST is not None:
-                visualize(
-                    cfg=cfg,
-                    use_gpu=args.use_gpu,
-                    vis_file_list=cfg.DATASET.VIS_FILE_LIST,
-                    vis_dir="visual",
-                    ckpt_dir=ckpt_dir,
-                    log_writer=log_writer)
+            # if args.use_vdl and cfg.DATASET.VIS_FILE_LIST is not None:
+            #     visualize(
+            #         cfg=cfg,
+            #         use_gpu=args.use_gpu,
+            #         vis_file_list=cfg.DATASET.VIS_FILE_LIST,
+            #         vis_dir="visual",
+            #         ckpt_dir=ckpt_dir,
+            #         log_writer=log_writer)
 
     # save final model
     if cfg.TRAINER_ID == 0:

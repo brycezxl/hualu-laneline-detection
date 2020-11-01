@@ -20,11 +20,11 @@ MODEL:
             NUM_CHANNELS: [48, 96, 192, 384]
 
 # 其他配置
-TRAIN_CROP_SIZE: (512, 512)
-EVAL_CROP_SIZE: (512, 512)
+TRAIN_CROP_SIZE: (846, 470)
+EVAL_CROP_SIZE: (846, 470)
 AUG:
     AUG_METHOD: "unpadding"
-    FIX_RESIZE_SIZE: (512, 512)
+    FIX_RESIZE_SIZE: (846, 470)
 
     MIRROR: True
 
@@ -38,21 +38,20 @@ AUG:
     # TRAIN_CROP_SIZE: (512, 512)
     # EVAL_CROP_SIZE: (512, 512)
 
-BATCH_SIZE: 6
+BATCH_SIZE: 4
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w48_bn_imagenet/"
-    MODEL_SAVE_DIR: "./saved_model/hrnet_4811/"
+    MODEL_SAVE_DIR: "./saved_model/4206-hr48-resize+norm/"
     SNAPSHOT_EPOCH: 3
     SYNC_BATCH_NORM: False
 TEST:
-    TEST_MODEL: "./saved_model/hrnet_4811/best_model"
+    TEST_MODEL: "./saved_model/4206-hr48-resize+norm/best_model"
 SOLVER:
     NUM_EPOCHS: 40
     LR: 0.0001
     LR_POLICY: "poly"
     OPTIMIZER: "adam"
     LOSS: ["softmax_loss"]
-    CROSS_ENTROPY_WEIGHT: 'dynamic'
     LOSS_WEIGHT:
 #        LOVASZ_SOFTMAX_LOSS: 0.8
         SOFTMAX_LOSS: 1
