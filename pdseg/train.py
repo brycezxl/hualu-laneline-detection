@@ -67,7 +67,7 @@ def parse_args():
         '--log_steps',
         dest='log_steps',
         help='Display logging information at every log_steps',
-        default=100,
+        default=300,
         type=int)
     parser.add_argument(
         '--debug',
