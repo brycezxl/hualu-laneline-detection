@@ -334,7 +334,7 @@ def train(cfg):
         data_loader.start()
         while True:
             if step > 10:
-                step = 0
+                step = 1
                 break
             try:
                 if args.debug:
