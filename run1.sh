@@ -1,3 +1,3 @@
-CUDA_VISIBLE_DEVICES=1,2 python pdseg/train.py --cfg ./configs/zxl-hr64-base-1.yaml --do_eval | tee -a ./train_log/641
-CUDA_VISIBLE_DEVICES=1,2 python pdseg/train.py --cfg ./configs/zxl-hr64-base-2.yaml --do_eval | tee -a ./train_log/642
-CUDA_VISIBLE_DEVICES=1,2 python pdseg/train.py --cfg ./configs/zxl-hr64-base-3.yaml --do_eval | tee -a ./train_log/643
+CUDA_VISIBLE_DEVICES=0 python pdseg/train.py --cfg ./configs/sf-hr18-city-1.yaml --do_eval | tee -a ./train_log/city1
+CUDA_VISIBLE_DEVICES=0 python pdseg/train.py --cfg ./configs/sf-hr18-city-2.yaml --do_eval | tee -a ./train_log/city2
+CUDA_VISIBLE_DEVICES=0 python pdseg/train.py --cfg ./configs/sf-hr18-city-3.yaml --do_eval | tee -a ./train_log/city3

@@ -1,11 +1,11 @@
 # 数据集配置
 DATASET:
-    DATA_DIR: "/data01/zxl/hualu-laneline-detection/Semi-Final/"
+    DATA_DIR: "/home/zxl/hualu-laneline-detection/data/"
     NUM_CLASSES: 20
-    TRAIN_FILE_LIST: "/data01/zxl/hualu-laneline-detection/Semi-Final/train_list.txt"
-    VAL_FILE_LIST: "/data01/zxl/hualu-laneline-detection/Semi-Final/val_list.txt"
-    TEST_FILE_LIST: "/data01/zxl/hualu-laneline-detection/Semi-Final/test_list.txt"
-    VIS_FILE_LIST: "/data01/zxl/hualu-laneline-detection/Semi-Final/test_list.txt"
+    TRAIN_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/train_list.txt"
+    VAL_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/val_list.txt"
+    TEST_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/test_list.txt"
+    VIS_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/test_list.txt"
 
 # 预训练模型配置
 MODEL:
@@ -28,30 +28,28 @@ AUG:
 
     MIRROR: True
 
-    RICH_CROP.ENABLE: True
-    RICH_CROP.BLUR: True
-    RICH_CROP.BLUR_RATIO: 0.2
-    RICH_CROP.BRIGHTNESS_JITTER_RATIO: 0.2
-    RICH_CROP.SATURATION_JITTER_RATIO: 0.2
-    RICH_CROP.CONTRAST_JITTER_RATIO: 0.2
+#    RICH_CROP.ENABLE: True
+#    RICH_CROP.BLUR: True
+#    RICH_CROP.BLUR_RATIO: 0.2
+#    RICH_CROP.BRIGHTNESS_JITTER_RATIO: 0.2
+#    RICH_CROP.SATURATION_JITTER_RATIO: 0.2
+#    RICH_CROP.CONTRAST_JITTER_RATIO: 0.2
 
     # TRAIN_CROP_SIZE: (512, 512)
     # EVAL_CROP_SIZE: (512, 512)
 
 BATCH_SIZE: 12
 TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_cityscapes/"
-    MODEL_SAVE_DIR: "./saved_model/3738-hr18-base/"
-    SNAPSHOT_EPOCH: 3
+    PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_imagenet/"
+    MODEL_SAVE_DIR: "./saved_model/hr18-img-3/"
+    SNAPSHOT_EPOCH: 4
 TEST:
-    TEST_MODEL: "./saved_model/3738-hr18-base/best_model"
+    TEST_MODEL: "./saved_model/hr18-img-1/best_model"
 SOLVER:
-    NUM_EPOCHS: 40
-    LR: 0.0003
+    NUM_EPOCHS: 50
+    LR: 0.001
     LR_POLICY: "poly"
     OPTIMIZER: "adam"
-#    LOSS: ["lovasz_softmax_loss","softmax_loss"]
     LOSS: ["softmax_loss"]
     LOSS_WEIGHT:
-#        LOVASZ_SOFTMAX_LOSS: 0.8
         SOFTMAX_LOSS: 1
