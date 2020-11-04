@@ -3,6 +3,8 @@ import numpy as np
 
 
 def build_datasets(base, val_ratio=0.2):
+    ban_list = ["10020533.jpg"]
+
     with open(base+'labels.txt', 'w') as f:
         for i in range(20):
             f.write(str(i)+'\n')
@@ -14,6 +16,8 @@ def build_datasets(base, val_ratio=0.2):
 
     with open(os.path.join(base, 'train_list.txt'), 'w+') as f:
         for pt in imgs[:-val_num]:
+            if pt in ban_list:
+                continue
             img = 'train/'+pt
             ann = 'train_label/'+pt.replace('.jpg', '.png')
             info = img + ' ' + ann + '\n'
@@ -21,6 +25,8 @@ def build_datasets(base, val_ratio=0.2):
 
     with open(os.path.join(base, 'val_list.txt'), 'w+') as f:
         for pt in imgs[-val_num:]:
+            if pt in ban_list:
+                continue
             img = 'train/'+pt
             ann = 'train_label/'+pt.replace('.jpg', '.png')
             info = img + ' ' + ann + '\n'
