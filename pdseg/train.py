@@ -78,7 +78,8 @@ def parse_args():
         '--use_vdl',
         dest='use_vdl',
         help='whether to record the data during training to VisualDL',
-        action='store_true')
+        action='store_true',
+        default=True)
     parser.add_argument(
         '--vdl_log_dir',
         dest='vdl_log_dir',
