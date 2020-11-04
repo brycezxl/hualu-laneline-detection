@@ -131,6 +131,16 @@ def save_checkpoint(program, ckpt_name):
     return ckpt_dir
 
 
+def del_file(path):
+    ls = os.listdir(path)
+    for i in ls:
+        c_path = os.path.join(path, i)
+        if os.path.isdir(c_path):
+            del_file(c_path)
+        else:
+            os.remove(c_path)
+
+
 def load_checkpoint(exe, program):
     """
     Load checkpoiont for resuming training
@@ -323,6 +333,9 @@ def train(cfg):
     for epoch in range(begin_epoch, cfg.SOLVER.NUM_EPOCHS + 1):
         data_loader.start()
         while True:
+            if step > 10:
+                step = 0
+                break
             try:
                 if args.debug:
                     # Print category IoU and accuracy to check whether the
@@ -420,6 +433,7 @@ def train(cfg):
                         ckpt_dir,
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
                         mean_iou))
+                del_file(ckpt_dir)
 
             # Use VisualDL to visualize results
             # if args.use_vdl and cfg.DATASET.VIS_FILE_LIST is not None:
