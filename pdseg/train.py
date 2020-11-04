@@ -333,9 +333,6 @@ def train(cfg):
     for epoch in range(begin_epoch, cfg.SOLVER.NUM_EPOCHS + 1):
         data_loader.start()
         while True:
-            if step > 10:
-                step = 1
-                break
             try:
                 if args.debug:
                     # Print category IoU and accuracy to check whether the
@@ -396,6 +393,9 @@ def train(cfg):
                         sys.stdout.flush()
                         avg_loss = 0.0
                         timer.restart()
+
+                    if step % 10 == 0:
+                        break
 
                     # NOTE : used for benchmark, profiler tools
                     if args.is_profiler and epoch == 1 and step == args.log_steps:
