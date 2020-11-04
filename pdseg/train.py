@@ -67,7 +67,7 @@ def parse_args():
         '--log_steps',
         dest='log_steps',
         help='Display logging information at every log_steps',
-        default=500,
+        default=100,
         type=int)
     parser.add_argument(
         '--debug',
@@ -394,9 +394,6 @@ def train(cfg):
                         avg_loss = 0.0
                         timer.restart()
 
-                    if step % 10 == 0:
-                        break
-
                     # NOTE : used for benchmark, profiler tools
                     if args.is_profiler and epoch == 1 and step == args.log_steps:
                         profiler.start_profiler("All")
@@ -414,7 +411,6 @@ def train(cfg):
                 or epoch == cfg.SOLVER.NUM_EPOCHS) and cfg.TRAINER_ID == 0:
             ckpt_dir = save_checkpoint(train_prog, epoch)
             save_infer_program(test_prog, ckpt_dir)
-            del_file(ckpt_dir)
 
             if args.do_eval:
                 print("Evaluation start")
@@ -435,6 +431,8 @@ def train(cfg):
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
                         mean_iou))
 
+            del_file(ckpt_dir)
+
             # Use VisualDL to visualize results
             # if args.use_vdl and cfg.DATASET.VIS_FILE_LIST is not None:
             #     visualize(
@@ -446,9 +444,9 @@ def train(cfg):
             #         log_writer=log_writer)
 
     # save final model
-    if cfg.TRAINER_ID == 0:
-        ckpt_dir = save_checkpoint(train_prog, 'final')
-        save_infer_program(test_prog, ckpt_dir)
+    # if cfg.TRAINER_ID == 0:
+    #     ckpt_dir = save_checkpoint(train_prog, 'final')
+    #     save_infer_program(test_prog, ckpt_dir)
 
 
 def main(args):
