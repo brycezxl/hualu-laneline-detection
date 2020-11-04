@@ -414,6 +414,7 @@ def train(cfg):
                 or epoch == cfg.SOLVER.NUM_EPOCHS) and cfg.TRAINER_ID == 0:
             ckpt_dir = save_checkpoint(train_prog, epoch)
             save_infer_program(test_prog, ckpt_dir)
+            del_file(ckpt_dir)
 
             if args.do_eval:
                 print("Evaluation start")
@@ -433,7 +434,6 @@ def train(cfg):
                         ckpt_dir,
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
                         mean_iou))
-                del_file(ckpt_dir)
 
             # Use VisualDL to visualize results
             # if args.use_vdl and cfg.DATASET.VIS_FILE_LIST is not None:
