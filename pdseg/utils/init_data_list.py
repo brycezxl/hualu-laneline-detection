@@ -34,5 +34,5 @@ def build_datasets(base, val_ratio=0.2):
 
 
 if __name__ == '__main__':
-    path = r"/data01/zxl/hualu-laneline-detection/Semi-Final/"
+    path = r"/home/zxl/hualu-laneline-detection/data/"
     build_datasets(path)
