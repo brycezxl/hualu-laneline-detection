@@ -205,6 +205,7 @@ class SegDataset(object):
             grt_width = grt.shape[1]
 
             if img_height != grt_height or img_width != grt_width:
+                print(img_path)
                 raise Exception(
                     "Source img and label img must has the same size.")
         else:
