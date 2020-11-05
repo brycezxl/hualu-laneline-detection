@@ -20,11 +20,11 @@ MODEL:
             NUM_CHANNELS: [18, 36, 72, 144]
 
 # 其他配置
-TRAIN_CROP_SIZE: (686, 381)
-EVAL_CROP_SIZE: (686, 381)
+TRAIN_CROP_SIZE: (800, 444)
+EVAL_CROP_SIZE: (800, 444)
 AUG:
     AUG_METHOD: "unpadding"
-    FIX_RESIZE_SIZE: (686, 381)
+    FIX_RESIZE_SIZE: (800, 444)
 
     MIRROR: True
 
@@ -38,13 +38,13 @@ AUG:
     # TRAIN_CROP_SIZE: (512, 512)
     # EVAL_CROP_SIZE: (512, 512)
 
-BATCH_SIZE: 13
+BATCH_SIZE: 10
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_imagenet/"
-    MODEL_SAVE_DIR: "./saved_model/hr18-size-2/"
+    MODEL_SAVE_DIR: "./saved_model/hr18-size-3/"
     SNAPSHOT_EPOCH: 4
 TEST:
-    TEST_MODEL: "./saved_model/hr18-size-2/best_model"
+    TEST_MODEL: "./saved_model/hr18-size-3/best_model"
 SOLVER:
     NUM_EPOCHS: 50
     LR: 0.0003

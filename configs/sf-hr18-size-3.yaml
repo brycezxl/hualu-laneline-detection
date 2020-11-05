@@ -38,13 +38,13 @@ AUG:
     # TRAIN_CROP_SIZE: (512, 512)
     # EVAL_CROP_SIZE: (512, 512)
 
-BATCH_SIZE: 8
+BATCH_SIZE: 10
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_imagenet/"
-    MODEL_SAVE_DIR: "./saved_model/hr18-size-1/"
+    MODEL_SAVE_DIR: "./saved_model/hr18-size-3/"
     SNAPSHOT_EPOCH: 4
 TEST:
-    TEST_MODEL: "./saved_model/hr18-size-1/best_model"
+    TEST_MODEL: "./saved_model/hr18-size-3/best_model"
 SOLVER:
     NUM_EPOCHS: 50
     LR: 0.0001
