@@ -28,9 +28,9 @@ AUG:
 
     MIRROR: True
 
-#    RICH_CROP.ENABLE: True
-#    RICH_CROP.BLUR: True
-#    RICH_CROP.BLUR_RATIO: 0.2
+    RICH_CROP.ENABLE: True
+    RICH_CROP.BLUR: True
+    RICH_CROP.BLUR_RATIO: 0.2
 #    RICH_CROP.BRIGHTNESS_JITTER_RATIO: 0.2
 #    RICH_CROP.SATURATION_JITTER_RATIO: 0.2
 #    RICH_CROP.CONTRAST_JITTER_RATIO: 0.2
@@ -44,7 +44,7 @@ TRAIN:
     MODEL_SAVE_DIR: "./saved_model/hr18-img-2/"
     SNAPSHOT_EPOCH: 4
 TEST:
-    TEST_MODEL: "./saved_model/hr18-img-2/best_model"
+    TEST_MODEL: "./saved_model/hr18-img-1/best_model"
 SOLVER:
     NUM_EPOCHS: 50
     LR: 0.0001
