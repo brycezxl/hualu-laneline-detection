@@ -305,7 +305,7 @@ def train(cfg):
             exit(1)
 
         from visualdl import LogWriter
-        log_writer = LogWriter(args.vdl_log_dir)
+        log_writer = LogWriter(args.vdl_log_dir, file_name=cfg.TRAIN.MODEL_SAVE_DIR.spilt["/"][-1])
 
     # trainer_id = int(os.getenv("PADDLE_TRAINER_ID", 0))
     # num_trainers = int(os.environ.get('PADDLE_TRAINERS_NUM', 1))

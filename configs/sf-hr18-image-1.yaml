@@ -38,7 +38,7 @@ AUG:
     # TRAIN_CROP_SIZE: (512, 512)
     # EVAL_CROP_SIZE: (512, 512)
 
-BATCH_SIZE: 12
+BATCH_SIZE: 13
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_imagenet/"
     MODEL_SAVE_DIR: "./saved_model/hr18-img-1/"
