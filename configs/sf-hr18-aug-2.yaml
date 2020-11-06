@@ -41,10 +41,10 @@ AUG:
 BATCH_SIZE: 13
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_imagenet/"
-    MODEL_SAVE_DIR: "./saved_model/hr18-img-2/"
+    MODEL_SAVE_DIR: "./saved_model/hr18-aug-2/"
     SNAPSHOT_EPOCH: 4
 TEST:
-    TEST_MODEL: "./saved_model/hr18-img-1/best_model"
+    TEST_MODEL: "./saved_model/hr18-aug-2/best_model"
 SOLVER:
     NUM_EPOCHS: 50
     LR: 0.0001
