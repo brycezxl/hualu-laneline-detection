@@ -21,6 +21,8 @@ import os
 
 # GPU memory garbage collection optimization flags
 os.environ['FLAGS_eager_delete_tensor_gb'] = "0.0"
+os.environ['CUDA_VISIBLE_DEVICE'] = "2"
+os.chdir("../")
 
 import sys
 import argparse
@@ -43,7 +45,7 @@ def parse_args():
         '--cfg',
         dest='cfg_file',
         help='Config file for training (and optionally testing)',
-        default=None,
+        default="./configs/sf-hr18-city-1.yaml",
         type=str)
     parser.add_argument(
         '--use_gpu', dest='use_gpu', help='Use gpu or cpu', action='store_true')
@@ -63,9 +65,9 @@ def parse_args():
         help='See config.py for all options',
         default=None,
         nargs=argparse.REMAINDER)
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
+    # if len(sys.argv) == 1:
+    #     parser.print_help()
+    #     sys.exit(1)
     return parser.parse_args()
 
 
@@ -84,16 +86,38 @@ def to_png_fn(fn):
     return basename + ".png"
 
 
+def join(png1, png2, flag='horizontal'):
+    """
+    :param png1: path
+    :param png2: path
+    :param flag: horizontal or vertical
+    :return:
+    """
+    img1, img2 = png1, png2
+    size1, size2 = img1.size, img2.size
+    if flag == 'horizontal':
+        joint = PILImage.new('RGB', (size1[0]+size2[0], size1[1]))
+        loc1, loc2 = (0, 0), (size1[0], 0)
+        joint.paste(img1, loc1)
+        joint.paste(img2, loc2)
+    else:
+        joint = PILImage.new('RGB', (size1[0], size1[1]+size2[1]))
+        loc1, loc2 = (0, 0), (0, size1[1])
+        joint.paste(img1, loc1)
+        joint.paste(img2, loc2)
+    return joint
+
+
 def visualize(cfg,
               vis_file_list=None,
               use_gpu=False,
-              vis_dir="visual",
+              vis_dir="show",
               ckpt_dir=None,
               log_writer=None,
               local_test=False,
               **kwargs):
     if vis_file_list is None:
-        vis_file_list = cfg.DATASET.VIS_FILE_LIST
+        vis_file_list = cfg.DATASET.VAL_FILE_LIST
     dataset = SegDataset(
         file_list=vis_file_list,
         mode=ModelPhase.VISUAL,
@@ -122,7 +146,7 @@ def visualize(cfg,
         except:
             fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
 
-    save_dir = vis_dir
+    save_dir = "show"
     makedirs(save_dir)
 
     fetch_list = [pred.name]
@@ -161,40 +185,38 @@ def visualize(cfg,
 
             pred_mask = PILImage.fromarray(res_map.astype(np.uint8), mode='L')
             pred_mask.putpalette(color_map)
-            pred_mask.save(vis_fn)
+            # pred_mask.save(vis_fn)
+
+            pred_mask_np = np.array(pred_mask.convert("RGB"))
+            im_pred = PILImage.fromarray(pred_mask_np)
+
+            # Original image
+            # BGR->RGB
+            img = cv2.imread(os.path.join(cfg.DATASET.DATA_DIR,
+                                          img_name))[..., ::-1]
+            im_ori = PILImage.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+            # log_writer.add_image("Images/{}".format(img_name), img, epoch)
+            # add ground truth (label) images
+            grt = grts[i]
+            grt = grt[0:valid_shape[0], 0:valid_shape[1]]
+            grt_pil = PILImage.fromarray(grt.astype(np.uint8), mode='P')
+            grt_pil.putpalette(color_map)
+            grt_pil = grt_pil.resize((org_shape[1], org_shape[0]))
+            grt = np.array(grt_pil.convert("RGB"))
+            im_grt = PILImage.fromarray(grt)
+
+            im_grt_cat = PILImage.blend(im_ori, im_grt, 0.5)
+            im_pred_cat = PILImage.blend(im_ori, im_pred, 0.5)
+
+            im_ori = join(im_ori, im_ori, flag="vertical")
+            im_grt_cat = join(im_grt_cat, im_grt, flag="vertical")
+            im_pred_cat = join(im_pred_cat, im_pred, flag="vertical")
+            new_img = join(im_ori, im_grt_cat)
+            new_img = join(new_img, im_pred_cat)
+            new_img.save(vis_fn)
 
             img_cnt += 1
-            print("#{} visualize image path: {}".format(img_cnt, vis_fn))
-
-            # Use VisualDL to visualize image
-            if log_writer is not None:
-                # Calulate epoch from ckpt_dir folder name
-                epoch = int(os.path.split(ckpt_dir)[-1])
-                print("VisualDL visualization epoch", epoch)
-
-                pred_mask_np = np.array(pred_mask.convert("RGB"))
-                log_writer.add_image("Predict/{}".format(img_name),
-                                     pred_mask_np, epoch)
-                # Original image
-                # BGR->RGB
-                img = cv2.imread(os.path.join(cfg.DATASET.DATA_DIR,
-                                              img_name))[..., ::-1]
-                log_writer.add_image("Images/{}".format(img_name), img, epoch)
-                # add ground truth (label) images
-                grt = grts[i]
-                if grt is not None:
-                    grt = grt[0:valid_shape[0], 0:valid_shape[1]]
-                    grt_pil = PILImage.fromarray(grt.astype(np.uint8), mode='P')
-                    grt_pil.putpalette(color_map)
-                    grt_pil = grt_pil.resize((org_shape[1], org_shape[0]))
-                    grt = np.array(grt_pil.convert("RGB"))
-                    log_writer.add_image("Label/{}".format(img_name), grt,
-                                         epoch)
-
-        # If in local_test mode, only visualize 5 images just for testing
-        # procedure
-        if local_test and img_cnt >= 5:
-            break
+            print("#{} show image path: {}".format(img_cnt, vis_fn))
 
 
 if __name__ == '__main__':

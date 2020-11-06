@@ -21,30 +21,30 @@ MODEL:
 
 # 其他配置
 TRAIN_CROP_SIZE: (512, 512)
-EVAL_CROP_SIZE: (512, 512)
+EVAL_CROP_SIZE: (910, 512)
 AUG:
     AUG_METHOD: "unpadding"
-    FIX_RESIZE_SIZE: (512, 512)
+    FIX_RESIZE_SIZE: (910, 512)
 
     MIRROR: True
 
     RICH_CROP.ENABLE: True
-    RICH_CROP.BLUR: True
-    RICH_CROP.BLUR_RATIO: 0.2
+    RICH_CROP.MIN_AREA_RATIO: 0.7
+    RICH_CROP.ASPECT_RATIO: 0.7
+#    RICH_CROP.BLUR: True
+#    RICH_CROP.BLUR_RATIO: 0.2
 #    RICH_CROP.BRIGHTNESS_JITTER_RATIO: 0.2
 #    RICH_CROP.SATURATION_JITTER_RATIO: 0.2
 #    RICH_CROP.CONTRAST_JITTER_RATIO: 0.2
 
-    # TRAIN_CROP_SIZE: (512, 512)
-    # EVAL_CROP_SIZE: (512, 512)
 
-BATCH_SIZE: 13
+BATCH_SIZE: 12
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_imagenet/"
-    MODEL_SAVE_DIR: "./saved_model/hr18-aug-2/"
+    MODEL_SAVE_DIR: "./saved_model/hr18-size-5/"
     SNAPSHOT_EPOCH: 4
 TEST:
-    TEST_MODEL: "./saved_model/hr18-aug-2/best_model"
+    TEST_MODEL: "./saved_model/hr18-size-5/best_model"
 SOLVER:
     NUM_EPOCHS: 50
     LR: 0.0001
