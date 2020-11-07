@@ -101,6 +101,7 @@ def parse_args():
         dest='enable_ce',
         help='If set True, enable continuous evaluation job.'
         'This flag is only used for internal test.',
+        default=True,
         action='store_true')
 
     # NOTE: This for benchmark
