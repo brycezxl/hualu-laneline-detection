@@ -195,9 +195,11 @@ def train(cfg):
     startup_prog = fluid.Program()
     train_prog = fluid.Program()
     test_prog = fluid.Program()
-    if args.enable_ce:
-        startup_prog.random_seed = 1000
-        train_prog.random_seed = 1000
+
+    startup_prog.random_seed = 1000
+    train_prog.random_seed = 1000
+    test_prog.random_seed = 1000
+    
     drop_last = True
 
     dataset = SegDataset(
