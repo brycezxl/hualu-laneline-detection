@@ -101,7 +101,6 @@ def parse_args():
         dest='enable_ce',
         help='If set True, enable continuous evaluation job.'
         'This flag is only used for internal test.',
-        default=True,
         action='store_true')
 
     # NOTE: This for benchmark
@@ -195,11 +194,9 @@ def train(cfg):
     startup_prog = fluid.Program()
     train_prog = fluid.Program()
     test_prog = fluid.Program()
-
-    startup_prog.random_seed = 1000
-    train_prog.random_seed = 1000
-    test_prog.random_seed = 1000
-    
+    if args.enable_ce:
+        startup_prog.random_seed = 1000
+        train_prog.random_seed = 1000
     drop_last = True
 
     dataset = SegDataset(
