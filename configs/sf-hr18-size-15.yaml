@@ -1,0 +1,55 @@
+# 数据集配置
+DATASET:
+    DATA_DIR: "/home/zxl/hualu-laneline-detection/data/"
+    NUM_CLASSES: 20
+    TRAIN_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/train_list.txt"
+    VAL_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/val_list.txt"
+    TEST_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/test_list.txt"
+    VIS_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/test_list.txt"
+
+# 预训练模型配置
+MODEL:
+    MODEL_NAME: "hrnet"
+    DEFAULT_NORM_TYPE: "bn"
+    HRNET:
+        STAGE2:
+            NUM_CHANNELS: [18, 36]
+        STAGE3:
+            NUM_CHANNELS: [18, 36, 72]
+        STAGE4:
+            NUM_CHANNELS: [18, 36, 72, 144]
+
+# 其他配置
+TRAIN_CROP_SIZE: (600, 600)
+EVAL_CROP_SIZE: (1080, 600)
+AUG:
+    AUG_METHOD: "unpadding"
+    FIX_RESIZE_SIZE: (1080, 600)
+
+    MIRROR: True
+
+    RICH_CROP.ENABLE: True
+    RICH_CROP.MIN_AREA_RATIO: 0.6
+    RICH_CROP.ASPECT_RATIO: 0.6
+#    RICH_CROP.BLUR: True
+#    RICH_CROP.BLUR_RATIO: 0.2
+#    RICH_CROP.BRIGHTNESS_JITTER_RATIO: 0.2
+#    RICH_CROP.SATURATION_JITTER_RATIO: 0.2
+#    RICH_CROP.CONTRAST_JITTER_RATIO: 0.2
+
+
+BATCH_SIZE: 10
+TRAIN:
+    PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_imagenet/"
+    MODEL_SAVE_DIR: "./saved_model/hr18-size-15/"
+    SNAPSHOT_EPOCH: 4
+TEST:
+    TEST_MODEL: "./saved_model/hr18-size-15/best_model"
+SOLVER:
+    NUM_EPOCHS: 50
+    LR: 0.0001
+    LR_POLICY: "poly"
+    OPTIMIZER: "adam"
+    LOSS: ["softmax_loss"]
+    LOSS_WEIGHT:
+        SOFTMAX_LOSS: 1

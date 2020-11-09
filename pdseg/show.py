@@ -149,12 +149,12 @@ def visualize(cfg,
     save_dir = "show"
     makedirs(save_dir)
 
-    fetch_list = [pred.name]
+    fetch_list = [pred.name, logit.name]
     test_reader = dataset.batch(dataset.generator, batch_size=1, is_test=True)
     img_cnt = 0
     for imgs, grts, img_names, valid_shapes, org_shapes in test_reader:
         pred_shape = (imgs.shape[2], imgs.shape[3])
-        pred, = exe.run(
+        pred, loss = exe.run(
             program=test_prog,
             feed={'image': imgs},
             fetch_list=fetch_list,
