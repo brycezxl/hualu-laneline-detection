@@ -1,4 +1,3 @@
-CUDA_VISIBLE_DEVICES=0 python pdseg/train.py --cfg ./configs/sf-hr18-size-12.yaml --do_eval | tee -a ./runs/size12
-CUDA_VISIBLE_DEVICES=0 python pdseg/train.py --cfg ./configs/sf-hr18-size-13.yaml --do_eval | tee -a ./runs/size13
-
-# CUDA_VISIBLE_DEVICES=0 python pdseg/vis.py --cfg ./configs/sf-hr18-city-1.yaml --use_gpu
+CUDA_VISIBLE_DEVICES=0,1 python pdseg/train.py --cfg ./configs/sf-hr18-agg-1.yaml --do_eval | tee -a ./runs/agg1
+CUDA_VISIBLE_DEVICES=0,1 python pdseg/train.py --cfg ./configs/sf-hr18-agg-2.yaml --do_eval | tee -a ./runs/agg2
+CUDA_VISIBLE_DEVICES=0,1 python pdseg/train.py --cfg ./configs/sf-hr18-agg-3.yaml --do_eval | tee -a ./runs/agg3
