@@ -53,7 +53,7 @@ TEST:
     TEST_MODEL: "./saved_model/hr48-agg-1/best_model"
 SOLVER:
     NUM_EPOCHS: 60
-    LR: 0.0002
+    LR: 0.0003
     LR_POLICY: "poly"
     OPTIMIZER: "adam"
     LOSS: ["softmax_loss"]
