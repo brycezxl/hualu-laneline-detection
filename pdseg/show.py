@@ -37,6 +37,7 @@ from reader import SegDataset
 from models.model_builder import build_model
 from models.model_builder import ModelPhase
 from tools.gray2pseudo_color import get_color_map_list
+from loss import multi_softmax_with_loss
 
 
 def parse_args():
@@ -108,6 +109,19 @@ def join(png1, png2, flag='horizontal'):
     return joint
 
 
+def cross_entropy(pred, label):
+    from sklearn.metrics import log_loss
+    pred = np.array(pred).squeeze(0)
+    label = label.squeeze(0)
+    loss = 0
+    labels = [i for i in range(pred.shape[0])]
+    for i in range(pred.shape[1]):
+        p_ = np.resize(pred[:, :, i], (pred.shape[1], pred.shape[0]))
+        l_ = label[:, i]
+        loss += log_loss(l_, p_, labels=labels)
+    return loss / pred.shape[1]
+
+
 def visualize(cfg,
               vis_file_list=None,
               use_gpu=False,
@@ -154,11 +168,12 @@ def visualize(cfg,
     img_cnt = 0
     for imgs, grts, img_names, valid_shapes, org_shapes in test_reader:
         pred_shape = (imgs.shape[2], imgs.shape[3])
-        pred, loss = exe.run(
+        pred, logit = exe.run(
             program=test_prog,
             feed={'image': imgs},
             fetch_list=fetch_list,
             return_numpy=True)
+        loss = cross_entropy(logit, grts)
 
         num_imgs = pred.shape[0]
         # TODO: use multi-thread to write images
@@ -178,6 +193,7 @@ def visualize(cfg,
                 interpolation=cv2.INTER_NEAREST)
 
             png_fn = to_png_fn(img_name)
+            png_fn = "%.5f-" % loss + png_fn
             # colorful segment result visualization
             vis_fn = os.path.join(save_dir, png_fn)
             dirname = os.path.dirname(vis_fn)
