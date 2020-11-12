@@ -33,8 +33,8 @@ AUG:
     MIRROR: True
 
     RICH_CROP.ENABLE: True
-    RICH_CROP.MIN_AREA_RATIO: 0.6
-    RICH_CROP.ASPECT_RATIO: 0.6
+    RICH_CROP.MIN_AREA_RATIO: 0.7
+    RICH_CROP.ASPECT_RATIO: 0.7
 
 #    RICH_CROP.ENABLE: True
 #    RICH_CROP.BLUR: True
@@ -46,15 +46,15 @@ AUG:
 BATCH_SIZE: 12
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w48_bn_imagenet/"
-    MODEL_SAVE_DIR: "./saved_model/hr48-agg-8/"
+    MODEL_SAVE_DIR: "./saved_model/hr48-agg-9/"
     SYNC_BATCH_NORM: True
     SNAPSHOT_EPOCH: 4
 TEST:
-    TEST_MODEL: "./saved_model/hr48-agg-8/best_model"
+    TEST_MODEL: "./saved_model/hr48-agg-9/best_model"
 SOLVER:
     NUM_EPOCHS: 60
     LR: 0.0001
-    LR_POLICY: "piece"
+    LR_POLICY: "cosine"
     OPTIMIZER: "adam"
     LOSS: ["softmax_loss"]
     LOSS_WEIGHT:

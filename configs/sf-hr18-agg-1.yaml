@@ -13,12 +13,11 @@ MODEL:
     DEFAULT_NORM_TYPE: "bn"
     HRNET:
         STAGE2:
-            NUM_CHANNELS: [48, 96]
+            NUM_CHANNELS: [18, 36]
         STAGE3:
-            NUM_CHANNELS: [48, 96, 192]
+            NUM_CHANNELS: [18, 36, 72]
         STAGE4:
-            NUM_CHANNELS: [48, 96, 192, 384]
-
+            NUM_CHANNELS: [18, 36, 72, 144]
 # 其他配置
 MEAN: [0.469, 0.504, 0.497]
 STD: [0.248, 0.255, 0.275]
@@ -45,16 +44,16 @@ AUG:
 
 BATCH_SIZE: 12
 TRAIN:
-    PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w48_bn_imagenet/"
-    MODEL_SAVE_DIR: "./saved_model/hr48-agg-8/"
+    PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_imagenet/"
+    MODEL_SAVE_DIR: "./saved_model/hr18-agg-1/"
     SYNC_BATCH_NORM: True
     SNAPSHOT_EPOCH: 4
 TEST:
-    TEST_MODEL: "./saved_model/hr48-agg-8/best_model"
+    TEST_MODEL: "./saved_model/hr18-agg-1/best_model"
 SOLVER:
     NUM_EPOCHS: 60
     LR: 0.0001
-    LR_POLICY: "piece"
+    LR_POLICY: "poly"
     OPTIMIZER: "adam"
     LOSS: ["softmax_loss"]
     LOSS_WEIGHT:
