@@ -54,7 +54,7 @@ TEST:
 SOLVER:
     NUM_EPOCHS: 60
     LR: 0.0001
-    LR_POLICY: "piece"
+    LR_POLICY: "piecewise"
     OPTIMIZER: "adam"
     LOSS: ["softmax_loss"]
     LOSS_WEIGHT:
