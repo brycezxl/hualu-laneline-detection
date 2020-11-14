@@ -49,7 +49,7 @@ def parse_args():
         '--cfg',
         dest='cfg_file',
         help='Config file for training (and optionally testing)',
-        default="../configs/zxl-test.yaml",
+        default="./configs/zxl-test.yaml",
         type=str)
     parser.add_argument(
         '--use_gpu',
@@ -467,6 +467,8 @@ def main(args):
 
 
 if __name__ == '__main__':
+    os.chdir("../")
+    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
     args = parse_args()
     if fluid.core.is_compiled_with_cuda() != True and args.use_gpu == True:
         print(

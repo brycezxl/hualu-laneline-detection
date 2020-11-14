@@ -24,8 +24,9 @@ from utils.config import cfg
 from loss import multi_softmax_with_loss
 from loss import multi_dice_loss
 from loss import multi_bce_loss
+from loss import lane_width_loss
 from lovasz_losses import multi_lovasz_hinge_loss, multi_lovasz_softmax_loss
-from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn, ocrnet
+from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn, ocrnet, mt_hrnet
 
 
 class ModelPhase(object):
@@ -86,6 +87,8 @@ def seg_model(image, class_num):
         logits = fast_scnn.fast_scnn(image, class_num)
     elif model_name == 'ocrnet':
         logits = ocrnet.ocrnet(image, class_num)
+    elif model_name == 'mt-hrnet':
+        logits = mt_hrnet.mt_hrnet(image, class_num)
     else:
         raise Exception(
             "unknow model name, only support unet, deeplabv3p, icnet, pspnet, hrnet, fast_scnn"
@@ -164,7 +167,10 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                         "softmax loss or lovasz softmax loss can not combine with bce loss or dice loss or lovasz hinge loss."
                     )
             cfg.PHASE = phase
-            logits = seg_model(image, class_num)
+            if cfg.MODEL.MODEL_NAME == 'mt-hrnet':
+                logits, logits1 = seg_model(image, class_num)
+            else:
+                logits = seg_model(image, class_num)
 
             # 根据选择的loss函数计算相应的损失函数
             if ModelPhase.is_train(phase) or ModelPhase.is_eval(phase):
@@ -178,6 +184,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                                                 weight))
                     loss_valid = True
                     valid_loss.append("softmax_loss")
+                if "lane_width_loss" in loss_type:
+                    weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
+                    avg_loss_list.append(
+                        lane_width_loss(logits1, label, mask, 4, weight))
+                    loss_valid = True
+                    valid_loss.append("lane_width_loss")
                 if "dice_loss" in loss_type:
                     avg_loss_list.append(multi_dice_loss(logits, label, mask))
                     loss_valid = True

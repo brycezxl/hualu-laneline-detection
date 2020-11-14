@@ -85,7 +85,7 @@ class SegConfig(dict):
                     diclist.append((key, value))
                     continue
                 try:
-                    self.__setattr__(key, value, create_if_not_exist=False)
+                    self.__setattr__(key, value, create_if_not_exist=True)
                 except KeyError:
                     raise KeyError('Non-existent config key: {}'.format(key))
 

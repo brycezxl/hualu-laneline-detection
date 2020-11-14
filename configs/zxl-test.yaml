@@ -1,15 +1,15 @@
 # 数据集配置
 DATASET:
-    DATA_DIR: "/data01/zxl/hualu_laneline/"
+    DATA_DIR: "/home/zxl/hualu-laneline-detection/data/"
     NUM_CLASSES: 20
-    TEST_FILE_LIST: "/data01/zxl/hualu_laneline/test_list_baseline.txt"
-    TRAIN_FILE_LIST: "/data01/zxl/hualu_laneline/train_list_baseline.txt"
-    VAL_FILE_LIST: "/data01/zxl/hualu_laneline/val_list_baseline.txt"
-    VIS_FILE_LIST: "/data01/zxl/hualu_laneline/test_list_baseline.txt"
+    TRAIN_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/train_list.txt"
+    VAL_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/val_list.txt"
+    TEST_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/test_list.txt"
+    VIS_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/test_list.txt"
 
 # 预训练模型配置
 MODEL:
-    MODEL_NAME: "hrnet"
+    MODEL_NAME: "mt-hrnet"
     DEFAULT_NORM_TYPE: "bn"
     HRNET:
         STAGE2:
@@ -51,7 +51,8 @@ SOLVER:
     LR_POLICY: "poly"
     OPTIMIZER: "adam"
 #    LOSS: ["lovasz_softmax_loss","softmax_loss"]
-    LOSS: ["softmax_loss"]
+    LOSS: ["softmax_loss", "lane_width_loss"]
     LOSS_WEIGHT:
 #        LOVASZ_SOFTMAX_LOSS: 0.8
-        SOFTMAX_LOSS: 1
+#        SOFTMAX_LOSS: 0.8
+        LANE_WIDTH_LOSS: 1

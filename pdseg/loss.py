@@ -84,6 +84,105 @@ def softmax_with_loss(logit,
     return avg_loss
 
 
+def lane_width_loss(logit,
+                    label,
+                    ignore_mask=None,
+                    num_classes=2,
+                    weight=None):
+    ignore_mask = fluid.layers.cast(ignore_mask, 'float32')
+    # label = fluid.layers.elementwise_min(
+    #     label, fluid.layers.assign(np.array([num_classes - 1], dtype=np.int32)))
+    logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
+    logit = fluid.layers.reshape(logit, [-1, num_classes])
+    label = fluid.layers.reshape(label, [-1, 1])
+    label = fluid.layers.cast(label, 'int32')
+    # label = fluid.layers.Print(label, message="Print label:")
+
+    new_label = fluid.layers.zeros_like(label)
+    flag = fluid.layers.ones_like(label)
+    new_label = fluid.layers.elementwise_add(
+        new_label,
+        fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 0), 'int32'))
+    # sum1 = fluid.layers.reduce_sum(fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 0), 'int32'))
+
+    new_label = fluid.layers.elementwise_add(new_label, fluid.layers.elementwise_mul(
+        fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 0), 'int32'),
+        fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 4), 'int32')))
+    # sum2 = fluid.layers.reduce_sum(fluid.layers.elementwise_mul(
+    #     fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 0), 'int32'),
+    #     fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 4), 'int32')))
+
+    new_label = fluid.layers.elementwise_add(new_label, 2 * fluid.layers.elementwise_mul(
+        fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 4), 'int32'),
+        fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 10), 'int32')))
+    # sum3 = fluid.layers.reduce_sum(fluid.layers.elementwise_mul(
+    #     fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 4), 'int32'),
+    #     fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 10), 'int32')))
+
+    new_label = fluid.layers.elementwise_add(
+        new_label,
+        3 * fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 10), 'int32'))
+    # sum4 = fluid.layers.reduce_sum(fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 10), 'int32'))
+
+    # sum1 = fluid.layers.Print(sum1, message="Print sum1:")
+    # sum2 = fluid.layers.Print(sum2, message="Print sum2:")
+    # sum3 = fluid.layers.Print(sum3, message="Print sum3:")
+    # sum4 = fluid.layers.Print(sum4, message="Print sum4:")
+    # new_label = fluid.layers.Print(new_label, message="Print new label:")
+    label = fluid.layers.cast(new_label, 'int64')
+
+    ignore_mask = fluid.layers.reshape(ignore_mask, [-1, 1])
+    if weight is None:
+        loss, probs = fluid.layers.softmax_with_cross_entropy(
+            logit,
+            label,
+            ignore_index=cfg.DATASET.IGNORE_INDEX,
+            return_softmax=True)
+    else:
+        label = fluid.layers.squeeze(label, axes=[-1])
+        label_one_hot = fluid.one_hot(input=label, depth=num_classes)
+        if isinstance(weight, list):
+            assert len(
+                weight
+            ) == num_classes, "weight length must equal num of classes"
+            weight = fluid.layers.assign(np.array([weight], dtype='float32'))
+        elif isinstance(weight, str):
+            assert weight.lower(
+            ) == 'dynamic', 'if weight is string, must be dynamic!'
+            tmp = []
+            total_num = fluid.layers.cast(
+                fluid.layers.shape(label)[0], 'float32')
+            for i in range(num_classes):
+                cls_pixel_num = fluid.layers.reduce_sum(label_one_hot[:, i])
+                ratio = total_num / (cls_pixel_num + 1)
+                tmp.append(ratio)
+            weight = fluid.layers.concat(tmp)
+            weight = weight / fluid.layers.reduce_sum(weight) * num_classes
+        elif isinstance(weight, fluid.layers.Variable):
+            pass
+        else:
+            raise ValueError(
+                'Expect weight is a list, string or Variable, but receive {}'.
+                format(type(weight)))
+        weight = fluid.layers.reshape(weight, [1, num_classes])
+        weighted_label_one_hot = fluid.layers.elementwise_mul(
+            label_one_hot, weight)
+        probs = fluid.layers.softmax(logit)
+        loss = fluid.layers.cross_entropy(
+            probs,
+            weighted_label_one_hot,
+            soft_label=True,
+            ignore_index=cfg.DATASET.IGNORE_INDEX)
+        weighted_label_one_hot.stop_gradient = True
+
+    loss = loss * ignore_mask
+    avg_loss = fluid.layers.mean(loss) / (fluid.layers.mean(ignore_mask) + cfg.MODEL.DEFAULT_EPSILON)
+
+    label.stop_gradient = True
+    ignore_mask.stop_gradient = True
+    return avg_loss
+
+
 # to change, how to appicate ignore index and ignore mask
 def dice_loss(logit, label, ignore_mask=None, epsilon=0.00001):
     if logit.shape[1] != 1 or label.shape[1] != 1 or ignore_mask.shape[1] != 1:
