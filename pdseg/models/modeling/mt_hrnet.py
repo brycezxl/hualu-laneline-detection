@@ -302,7 +302,7 @@ def high_resolution_net(input, num_classes):
         name='conv-21')
     out2 = fluid.layers.conv2d(
         input=out2,
-        num_filters=4,
+        num_filters=5,
         filter_size=1,
         stride=1,
         padding=0,

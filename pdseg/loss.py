@@ -100,28 +100,34 @@ def lane_width_loss(logit,
 
     new_label = fluid.layers.zeros_like(label)
     flag = fluid.layers.ones_like(label)
-    new_label = fluid.layers.elementwise_add(
-        new_label,
-        fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 0), 'int32'))
+    # new_label = fluid.layers.elementwise_add(
+    #     new_label,
+    #     fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 0), 'int32'))
     # sum1 = fluid.layers.reduce_sum(fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 0), 'int32'))
 
     new_label = fluid.layers.elementwise_add(new_label, fluid.layers.elementwise_mul(
-        fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 0), 'int32'),
+        fluid.layers.cast(fluid.layers.greater_equal(x=label, y=flag * 1), 'int32'),
         fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 4), 'int32')))
     # sum2 = fluid.layers.reduce_sum(fluid.layers.elementwise_mul(
     #     fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 0), 'int32'),
     #     fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 4), 'int32')))
 
     new_label = fluid.layers.elementwise_add(new_label, 2 * fluid.layers.elementwise_mul(
-        fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 4), 'int32'),
+        fluid.layers.cast(fluid.layers.greater_equal(x=label, y=flag * 5), 'int32'),
         fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 10), 'int32')))
     # sum3 = fluid.layers.reduce_sum(fluid.layers.elementwise_mul(
     #     fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 4), 'int32'),
     #     fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 10), 'int32')))
 
-    new_label = fluid.layers.elementwise_add(
-        new_label,
-        3 * fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 10), 'int32'))
+    new_label = fluid.layers.elementwise_add(new_label, 3 * (fluid.layers.elementwise_add(
+        fluid.layers.elementwise_mul(fluid.layers.cast(fluid.layers.greater_equal(x=label, y=flag * 11), 'int32'),
+                                     fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 12), 'int32')),
+        fluid.layers.cast(fluid.layers.equal(x=label, y=flag * 19), 'int32')
+    )))
+
+    new_label = fluid.layers.elementwise_add(new_label, 4 * fluid.layers.elementwise_mul(
+        fluid.layers.cast(fluid.layers.greater_equal(x=label, y=flag * 13), 'int32'),
+        fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 18), 'int32')))
     # sum4 = fluid.layers.reduce_sum(fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 10), 'int32'))
 
     # sum1 = fluid.layers.Print(sum1, message="Print sum1:")

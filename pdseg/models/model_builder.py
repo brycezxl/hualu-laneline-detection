@@ -187,7 +187,7 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                 if "lane_width_loss" in loss_type:
                     weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
                     avg_loss_list.append(
-                        lane_width_loss(logits1, label, mask, 4, weight))
+                        lane_width_loss(logits1, label, mask, 5, None))
                     loss_valid = True
                     valid_loss.append("lane_width_loss")
                 if "dice_loss" in loss_type:
