@@ -467,7 +467,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    os.chdir("../")
+    os.chdir("/home/zxl/hualu-laneline-detection/")
     os.environ['CUDA_VISIBLE_DEVICES'] = "0"
     args = parse_args()
     if fluid.core.is_compiled_with_cuda() != True and args.use_gpu == True:
