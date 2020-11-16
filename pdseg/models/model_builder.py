@@ -24,7 +24,7 @@ from utils.config import cfg
 from loss import multi_softmax_with_loss
 from loss import multi_dice_loss
 from loss import multi_bce_loss
-from loss import lane_width_loss
+from loss import lane_width_loss, inter_loss
 from lovasz_losses import multi_lovasz_hinge_loss, multi_lovasz_softmax_loss
 from models.modeling import deeplab, unet, icnet, pspnet, hrnet, fast_scnn, ocrnet, mt_hrnet
 
@@ -185,6 +185,12 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     loss_valid = True
                     valid_loss.append("softmax_loss")
                 if "lane_width_loss" in loss_type:
+                    weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
+                    avg_loss_list.append(
+                        inter_loss(logits, label, mask, class_num, weight))
+                    loss_valid = True
+                    valid_loss.append("inter_loss")
+                if "inter_loss" in loss_type:
                     weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
                     avg_loss_list.append(
                         lane_width_loss(logits1, label, mask, 5, None))
