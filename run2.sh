@@ -1,3 +1,2 @@
-CUDA_VISIBLE_DEVICES=1 python pdseg/train.py --cfg ./configs/sf-hr18-image-1.yaml --do_eval | tee -a ./runs/img1
-CUDA_VISIBLE_DEVICES=1 python pdseg/train.py --cfg ./configs/sf-hr18-image-2.yaml --do_eval | tee -a ./runs/img2
-CUDA_VISIBLE_DEVICES=1 python pdseg/train.py --cfg ./configs/sf-hr18-image-3.yaml --do_eval | tee -a ./runs/img3
+CUDA_VISIBLE_DEVICES=0 python pdseg/train.py --cfg ./configs/sf-hr18-loss-1.yaml --do_eval | tee -a ./runs/laneloss1
+CUDA_VISIBLE_DEVICES=0 python pdseg/train.py --cfg ./configs/sf-hr18-agg.yaml --do_eval | tee -a ./runs/18agg
