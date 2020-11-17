@@ -91,7 +91,40 @@ def inter_loss(logit, label, ignore_mask=None, num_classes=2, weight=None):
     logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
     logit = fluid.layers.reshape(logit, [-1, num_classes])
     label = fluid.layers.reshape(label, [-1, 1])
-    label = fluid.layers.cast(label, 'int64')
+    label = fluid.layers.cast(label, 'int32')
+
+    def get_std(label_, target):
+        def not_zero(label__, target_, label_sum_, label_flag_):
+            l_mean_ = fluid.layers.elementwise_div(label_sum_, label_flag_)
+            label__ = (label__ - l_mean_) ** 2
+            label__ = fluid.layers.elementwise_mul(label__, label_flag_)
+            return label__
+        flag = fluid.layers.ones_like(label_) * target
+        label_flag = fluid.layers.cast(fluid.layers.equal(label_, flag), "float32")
+        label_sum = fluid.layers.reduce_sum(label_flag)
+        zero = fluid.layers.fill_constant([1], "float32", 0)
+        l_std = fluid.layers.cond(
+            fluid.layers.equal(label_sum, zero),
+            not_zero(label_, target, label_sum, label_flag),
+            None
+        )
+        return l_std
+
+    def cond(j, num, label_std_):
+        return j < num
+
+    def body(j, num, label_std_):
+        # 计算过程是对输入参数i进行自增操作，即 i = i + 1
+        label_std_ += get_std(label, j)
+        j = j + 1
+        return j, num, label_std
+
+    label_std = fluid.layers.fill_constant([1], "float32", 0)
+    i = fluid.layers.fill_constant(shape=[1], dtype='int32', value=1)  # 循环计数器
+    n = fluid.layers.fill_constant(shape=[1], dtype='int32', value=20)  # 循环次数
+    _, _, label_std = fluid.layers.while_loop(cond=cond, body=body, loop_vars=[i, n, label_std])
+    label_std = label_std / 19
+
     ignore_mask = fluid.layers.reshape(ignore_mask, [-1, 1])
     if weight is None:
         loss, probs = fluid.layers.softmax_with_cross_entropy(
