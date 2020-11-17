@@ -9,7 +9,7 @@ DATASET:
 
 # 预训练模型配置
 MODEL:
-    MODEL_NAME: "mt-hrnet"
+    MODEL_NAME: "hrnet"
     DEFAULT_NORM_TYPE: "bn"
     HRNET:
         STAGE2:
@@ -20,8 +20,8 @@ MODEL:
             NUM_CHANNELS: [18, 36, 72, 144]
 
 # 其他配置
-#MEAN: [0.469, 0.504, 0.497]
-#STD: [0.248, 0.255, 0.275]
+MEAN: [0.485, 0.456, 0.406]
+STD: [0.229, 0.224, 0.225]
 
 TRAIN_CROP_SIZE: (512, 512)
 EVAL_CROP_SIZE: (910, 512)
@@ -43,20 +43,19 @@ AUG:
 #    RICH_CROP.SATURATION_JITTER_RATIO: 0.5
 #    RICH_CROP.CONTRAST_JITTER_RATIO: 0.5
 
-BATCH_SIZE: 8
+BATCH_SIZE: 12
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_imagenet/"
-    MODEL_SAVE_DIR: "./saved_model/hr18-loss-3/"
+    MODEL_SAVE_DIR: "./saved_model/hr18-agg2/"
 #    SYNC_BATCH_NORM: True
     SNAPSHOT_EPOCH: 4
 TEST:
-    TEST_MODEL: "./saved_model/hr18-loss-3/best_model"
+    TEST_MODEL: "./saved_model/hr18-agg2/best_model"
 SOLVER:
     NUM_EPOCHS: 60
     LR: 0.0001
     LR_POLICY: "poly"
     OPTIMIZER: "adam"
-    LOSS: ["lovasz_softmax_loss", "softmax_loss"]
+    LOSS: ["softmax_loss"]
     LOSS_WEIGHT:
-        LOVASZ_SOFTMAX_LOSS: 0.5
-        SOFTMAX_LOSS: 0.5
+        SOFTMAX_LOSS: 1

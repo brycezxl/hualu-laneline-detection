@@ -20,8 +20,8 @@ MODEL:
             NUM_CHANNELS: [18, 36, 72, 144]
 
 # 其他配置
-MEAN: [0.469, 0.504, 0.497]
-STD: [0.248, 0.255, 0.275]
+#MEAN: [0.469, 0.504, 0.497]
+#STD: [0.248, 0.255, 0.275]
 
 TRAIN_CROP_SIZE: (512, 512)
 EVAL_CROP_SIZE: (910, 512)
@@ -54,7 +54,7 @@ TEST:
 SOLVER:
     NUM_EPOCHS: 60
     LR: 0.0001
-    LR_POLICY: "cosine"
+    LR_POLICY: "poly"
     OPTIMIZER: "adam"
     LOSS: ["lovasz_softmax_loss", "softmax_loss"]
     LOSS_WEIGHT:
