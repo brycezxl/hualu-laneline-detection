@@ -3,7 +3,7 @@ DATASET:
     DATA_DIR: "/home/zxl/hualu-laneline-detection/data/"
     NUM_CLASSES: 20
     TRAIN_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/total_train_list.txt"
-    VAL_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/total_val_list.txt"
+    VAL_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/val_list.txt"
     TEST_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/test_list.txt"
     VIS_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/test_list.txt"
 
@@ -20,8 +20,8 @@ MODEL:
             NUM_CHANNELS: [64, 128, 256, 512]
 
 # 其他配置
-MEAN: [0.469, 0.504, 0.497]
-STD: [0.248, 0.255, 0.275]
+MEAN: [0.485, 0.456, 0.406]
+STD: [0.229, 0.224, 0.225]
 
 TRAIN_CROP_SIZE: (512, 512)
 EVAL_CROP_SIZE: (910, 512)

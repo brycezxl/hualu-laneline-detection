@@ -56,7 +56,7 @@ def parse_args():
         dest='use_gpu',
         help='Use gpu or cpu',
         action='store_true',
-        default=True)
+        default=False)
     parser.add_argument(
         '--use_mpio',
         dest='use_mpio',

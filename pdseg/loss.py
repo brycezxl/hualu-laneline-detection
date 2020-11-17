@@ -94,20 +94,37 @@ def inter_loss(logit, label, ignore_mask=None, num_classes=2, weight=None):
     label = fluid.layers.cast(label, 'int32')
 
     def get_std(label_, target):
-        def not_zero(label__, target_, label_sum_, label_flag_):
-            l_mean_ = fluid.layers.elementwise_div(label_sum_, label_flag_)
-            label__ = (label__ - l_mean_) ** 2
-            label__ = fluid.layers.elementwise_mul(label__, label_flag_)
-            return label__
         flag = fluid.layers.ones_like(label_) * target
-        label_flag = fluid.layers.cast(fluid.layers.equal(label_, flag), "float32")
-        label_sum = fluid.layers.reduce_sum(label_flag)
+        label_flag = fluid.layers.cast(fluid.layers.equal(fluid.layers.cast(label_, "float32"),
+                                                          fluid.layers.cast(flag, "float32")), "float32")
+        label_sum = fluid.layers.cast(fluid.layers.reduce_sum(label_flag), "float32")
         zero = fluid.layers.fill_constant([1], "float32", 0)
+
+        def not_zero():
+            a = fluid.layers.cast(fluid.layers.reduce_sum(
+                fluid.layers.elementwise_mul(label_flag, fluid.layers.cast(label_, "float32"))), "float32")
+            b = label_sum
+            fluid.layers.Print(a, message="a")
+            fluid.layers.Print(b, message="b")
+            l_mean_ = fluid.layers.cast(fluid.layers.reduce_sum(
+                fluid.layers.elementwise_mul(label_flag, fluid.layers.cast(label_, "float32"))), "float32") \
+                      / label_sum
+            fluid.layers.Print(l_mean_, message="l mean")
+            label__ = (label_ - l_mean_) ** 2
+            fluid.layers.Print(label__, message="label 1")
+            label__ = fluid.layers.elementwise_mul(fluid.layers.cast(label__, "float32"),
+                                                   fluid.layers.cast(label_flag, "float32"))
+            fluid.layers.Print(label__, message="label2")
+            return label__
+        def is_zero():
+            return fluid.layers.cast(fluid.layers.zeros_like(label_), "float32")
+
         l_std = fluid.layers.cond(
             fluid.layers.equal(label_sum, zero),
-            not_zero(label_, target, label_sum, label_flag),
-            None
+            is_zero,
+            not_zero
         )
+        fluid.layers.Print(l_std, message="std: ")
         return l_std
 
     def cond(j, num, label_std_):
@@ -126,49 +143,11 @@ def inter_loss(logit, label, ignore_mask=None, num_classes=2, weight=None):
     label_std = label_std / 19
 
     ignore_mask = fluid.layers.reshape(ignore_mask, [-1, 1])
-    if weight is None:
-        loss, probs = fluid.layers.softmax_with_cross_entropy(
-            logit,
-            label,
-            ignore_index=cfg.DATASET.IGNORE_INDEX,
-            return_softmax=True)
-    else:
-        label = fluid.layers.squeeze(label, axes=[-1])
-        label_one_hot = fluid.one_hot(input=label, depth=num_classes)
-        if isinstance(weight, list):
-            assert len(
-                weight
-            ) == num_classes, "weight length must equal num of classes"
-            weight = fluid.layers.assign(np.array([weight], dtype='float32'))
-        elif isinstance(weight, str):
-            assert weight.lower(
-            ) == 'dynamic', 'if weight is string, must be dynamic!'
-            tmp = []
-            total_num = fluid.layers.cast(
-                fluid.layers.shape(label)[0], 'float32')
-            for i in range(num_classes):
-                cls_pixel_num = fluid.layers.reduce_sum(label_one_hot[:, i])
-                ratio = total_num / (cls_pixel_num + 1)
-                tmp.append(ratio)
-            weight = fluid.layers.concat(tmp)
-            weight = weight / fluid.layers.reduce_sum(weight) * num_classes
-        elif isinstance(weight, fluid.layers.Variable):
-            pass
-        else:
-            raise ValueError(
-                'Expect weight is a list, string or Variable, but receive {}'.
-                format(type(weight)))
-        weight = fluid.layers.reshape(weight, [1, num_classes])
-        weighted_label_one_hot = fluid.layers.elementwise_mul(
-            label_one_hot, weight)
-        probs = fluid.layers.softmax(logit)
-        loss = fluid.layers.cross_entropy(
-            probs,
-            weighted_label_one_hot,
-            soft_label=True,
-            ignore_index=cfg.DATASET.IGNORE_INDEX)
-        weighted_label_one_hot.stop_gradient = True
-
+    loss, probs = fluid.layers.softmax_with_cross_entropy(
+        logit,
+        label,
+        ignore_index=cfg.DATASET.IGNORE_INDEX,
+        return_softmax=True)
     loss = loss * ignore_mask
     avg_loss = fluid.layers.mean(loss) / (fluid.layers.mean(ignore_mask) + cfg.MODEL.DEFAULT_EPSILON)
 

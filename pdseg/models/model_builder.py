@@ -185,13 +185,11 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     loss_valid = True
                     valid_loss.append("softmax_loss")
                 if "inter_loss" in loss_type:
-                    weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
                     avg_loss_list.append(
-                        inter_loss(logits, label, mask, class_num, weight))
+                        inter_loss(logits, label, mask, class_num, None))
                     loss_valid = True
                     valid_loss.append("inter_loss")
                 if "lane_width_loss" in loss_type:
-                    weight = cfg.SOLVER.CROSS_ENTROPY_WEIGHT
                     avg_loss_list.append(
                         lane_width_loss(logits1, label, mask, 5, None))
                     loss_valid = True

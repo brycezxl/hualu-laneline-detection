@@ -20,11 +20,11 @@ MODEL:
             NUM_CHANNELS: [18, 36, 72, 144]
 
 # 其他配置
-TRAIN_CROP_SIZE: (512, 512)
-EVAL_CROP_SIZE: (910, 512)
+TRAIN_CROP_SIZE: (100, 100)
+EVAL_CROP_SIZE: (100, 100)
 AUG:
     AUG_METHOD: "unpadding"
-    FIX_RESIZE_SIZE: (910, 512)
+    FIX_RESIZE_SIZE: (100, 100)
 
     MIRROR: True
 
@@ -38,7 +38,7 @@ AUG:
 #    RICH_CROP.CONTRAST_JITTER_RATIO: 0.2
 
 
-BATCH_SIZE: 12
+BATCH_SIZE: 3
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_imagenet/"
     MODEL_SAVE_DIR: "./saved_model/test/"
@@ -51,8 +51,9 @@ SOLVER:
     LR_POLICY: "poly"
     OPTIMIZER: "adam"
 #    LOSS: ["lovasz_softmax_loss","softmax_loss"]
-    LOSS: ["softmax_loss", "lane_width_loss"]
+    LOSS: ["softmax_loss", "inter_loss"]
     LOSS_WEIGHT:
 #        LOVASZ_SOFTMAX_LOSS: 0.8
         SOFTMAX_LOSS: 0.8
-        LANE_WIDTH_LOSS: 0.2
+        INTER_LOSS: 0.2
+NUM_TRAINERS: 1
