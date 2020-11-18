@@ -86,45 +86,36 @@ def softmax_with_loss(logit,
 
 def inter_loss(logit, label, ignore_mask=None, num_classes=2, weight=None):
     ignore_mask = fluid.layers.cast(ignore_mask, 'float32')
-    label = fluid.layers.elementwise_min(
-        label, fluid.layers.assign(np.array([num_classes - 1], dtype=np.int32)))
+
     logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
     logit = fluid.layers.reshape(logit, [-1, num_classes])
     label = fluid.layers.reshape(label, [-1, 1])
-    label = fluid.layers.cast(label, 'int32')
+    label = fluid.layers.cast(label, 'int64')
 
-    def get_std(label_, target):
-        flag = fluid.layers.ones_like(label_) * target
-        label_flag = fluid.layers.cast(fluid.layers.equal(fluid.layers.cast(label_, "float32"),
+    def get_std(target):
+        flag = fluid.layers.ones_like(label) * target
+        label_flag = fluid.layers.cast(fluid.layers.equal(fluid.layers.cast(label, "float32"),
                                                           fluid.layers.cast(flag, "float32")), "float32")
         label_sum = fluid.layers.cast(fluid.layers.reduce_sum(label_flag), "float32")
         zero = fluid.layers.fill_constant([1], "float32", 0)
 
         def not_zero():
-            a = fluid.layers.cast(fluid.layers.reduce_sum(
-                fluid.layers.elementwise_mul(label_flag, fluid.layers.cast(label_, "float32"))), "float32")
-            b = label_sum
-            fluid.layers.Print(a, message="a")
-            fluid.layers.Print(b, message="b")
-            l_mean_ = fluid.layers.cast(fluid.layers.reduce_sum(
-                fluid.layers.elementwise_mul(label_flag, fluid.layers.cast(label_, "float32"))), "float32") \
-                      / label_sum
-            fluid.layers.Print(l_mean_, message="l mean")
-            label__ = (label_ - l_mean_) ** 2
-            fluid.layers.Print(label__, message="label 1")
-            label__ = fluid.layers.elementwise_mul(fluid.layers.cast(label__, "float32"),
-                                                   fluid.layers.cast(label_flag, "float32"))
-            fluid.layers.Print(label__, message="label2")
-            return label__
+            out = fluid.layers.cast(fluid.layers.reduce_sum(
+                fluid.layers.elementwise_mul(label_flag, fluid.layers.cast(logit, "float32")), dim=0), "float32")
+            out = out / label_sum
+            out = (logit - out) ** 2
+            out = fluid.layers.elementwise_mul(fluid.layers.cast(out, "float32"),
+                                               fluid.layers.cast(label_flag, "float32"))
+            out = fluid.layers.reduce_sum(out) / label_sum / 19
+            return out
         def is_zero():
-            return fluid.layers.cast(fluid.layers.zeros_like(label_), "float32")
+            return fluid.layers.fill_constant([1], "float32", 0)
 
         l_std = fluid.layers.cond(
             fluid.layers.equal(label_sum, zero),
             is_zero,
             not_zero
         )
-        fluid.layers.Print(l_std, message="std: ")
         return l_std
 
     def cond(j, num, label_std_):
@@ -132,26 +123,20 @@ def inter_loss(logit, label, ignore_mask=None, num_classes=2, weight=None):
 
     def body(j, num, label_std_):
         # 计算过程是对输入参数i进行自增操作，即 i = i + 1
-        label_std_ += get_std(label, j)
+        label_std_ += get_std(j)
         j = j + 1
-        return j, num, label_std
+        return j, num, label_std_
 
     label_std = fluid.layers.fill_constant([1], "float32", 0)
     i = fluid.layers.fill_constant(shape=[1], dtype='int32', value=1)  # 循环计数器
     n = fluid.layers.fill_constant(shape=[1], dtype='int32', value=20)  # 循环次数
     _, _, label_std = fluid.layers.while_loop(cond=cond, body=body, loop_vars=[i, n, label_std])
-    label_std = label_std / 19
-
-    ignore_mask = fluid.layers.reshape(ignore_mask, [-1, 1])
-    loss, probs = fluid.layers.softmax_with_cross_entropy(
-        logit,
-        label,
-        ignore_index=cfg.DATASET.IGNORE_INDEX,
-        return_softmax=True)
-    loss = loss * ignore_mask
-    avg_loss = fluid.layers.mean(loss) / (fluid.layers.mean(ignore_mask) + cfg.MODEL.DEFAULT_EPSILON)
+    # fluid.layers.Print(label_std, message="std: ")
+    avg_loss = label_std / 19
 
     label.stop_gradient = True
+    label_std.stop_gradient = True
+
     ignore_mask.stop_gradient = True
     return avg_loss
 
@@ -162,51 +147,29 @@ def lane_width_loss(logit,
                     num_classes=2,
                     weight=None):
     ignore_mask = fluid.layers.cast(ignore_mask, 'float32')
-    # label = fluid.layers.elementwise_min(
-    #     label, fluid.layers.assign(np.array([num_classes - 1], dtype=np.int32)))
+
     logit = fluid.layers.transpose(logit, [0, 2, 3, 1])
     logit = fluid.layers.reshape(logit, [-1, num_classes])
     label = fluid.layers.reshape(label, [-1, 1])
     label = fluid.layers.cast(label, 'int32')
-    # label = fluid.layers.Print(label, message="Print label:")
 
     new_label = fluid.layers.zeros_like(label)
     flag = fluid.layers.ones_like(label)
-    # new_label = fluid.layers.elementwise_add(
-    #     new_label,
-    #     fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 0), 'int32'))
-    # sum1 = fluid.layers.reduce_sum(fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 0), 'int32'))
 
     new_label = fluid.layers.elementwise_add(new_label, fluid.layers.elementwise_mul(
         fluid.layers.cast(fluid.layers.greater_equal(x=label, y=flag * 1), 'int32'),
         fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 4), 'int32')))
-    # sum2 = fluid.layers.reduce_sum(fluid.layers.elementwise_mul(
-    #     fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 0), 'int32'),
-    #     fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 4), 'int32')))
-
     new_label = fluid.layers.elementwise_add(new_label, 2 * fluid.layers.elementwise_mul(
         fluid.layers.cast(fluid.layers.greater_equal(x=label, y=flag * 5), 'int32'),
         fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 10), 'int32')))
-    # sum3 = fluid.layers.reduce_sum(fluid.layers.elementwise_mul(
-    #     fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 4), 'int32'),
-    #     fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 10), 'int32')))
-
     new_label = fluid.layers.elementwise_add(new_label, 3 * (fluid.layers.elementwise_add(
         fluid.layers.elementwise_mul(fluid.layers.cast(fluid.layers.greater_equal(x=label, y=flag * 11), 'int32'),
                                      fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 12), 'int32')),
-        fluid.layers.cast(fluid.layers.equal(x=label, y=flag * 19), 'int32')
-    )))
-
+        fluid.layers.cast(fluid.layers.equal(x=label, y=flag * 19), 'int32'))))
     new_label = fluid.layers.elementwise_add(new_label, 4 * fluid.layers.elementwise_mul(
         fluid.layers.cast(fluid.layers.greater_equal(x=label, y=flag * 13), 'int32'),
         fluid.layers.cast(fluid.layers.less_equal(x=label, y=flag * 18), 'int32')))
-    # sum4 = fluid.layers.reduce_sum(fluid.layers.cast(fluid.layers.greater_than(x=label, y=flag * 10), 'int32'))
 
-    # sum1 = fluid.layers.Print(sum1, message="Print sum1:")
-    # sum2 = fluid.layers.Print(sum2, message="Print sum2:")
-    # sum3 = fluid.layers.Print(sum3, message="Print sum3:")
-    # sum4 = fluid.layers.Print(sum4, message="Print sum4:")
-    # new_label = fluid.layers.Print(new_label, message="Print new label:")
     label = fluid.layers.cast(new_label, 'int64')
 
     ignore_mask = fluid.layers.reshape(ignore_mask, [-1, 1])
@@ -255,7 +218,7 @@ def lane_width_loss(logit,
 
     loss = loss * ignore_mask
     avg_loss = fluid.layers.mean(loss) / (fluid.layers.mean(ignore_mask) + cfg.MODEL.DEFAULT_EPSILON)
-
+    new_label.stop_gradient = True
     label.stop_gradient = True
     ignore_mask.stop_gradient = True
     return avg_loss

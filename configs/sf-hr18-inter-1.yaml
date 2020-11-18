@@ -9,7 +9,7 @@ DATASET:
 
 # 预训练模型配置
 MODEL:
-    MODEL_NAME: "mt-hrnet"
+    MODEL_NAME: "hrnet"
     DEFAULT_NORM_TYPE: "bn"
     HRNET:
         STAGE2:
@@ -20,39 +20,43 @@ MODEL:
             NUM_CHANNELS: [18, 36, 72, 144]
 
 # 其他配置
-TRAIN_CROP_SIZE: (100, 100)
-EVAL_CROP_SIZE: (100, 100)
+MEAN: [0.485, 0.456, 0.406]
+STD: [0.229, 0.224, 0.225]
+
+TRAIN_CROP_SIZE: (512, 512)
+EVAL_CROP_SIZE: (910, 512)
+
 AUG:
     AUG_METHOD: "unpadding"
-    FIX_RESIZE_SIZE: (100, 100)
+    FIX_RESIZE_SIZE: (910, 512)
 
     MIRROR: True
 
     RICH_CROP.ENABLE: True
     RICH_CROP.MIN_AREA_RATIO: 0.6
     RICH_CROP.ASPECT_RATIO: 0.6
+    RICH_CROP.MAX_ROTATION: 0
+
 #    RICH_CROP.BLUR: True
-#    RICH_CROP.BLUR_RATIO: 0.2
-#    RICH_CROP.BRIGHTNESS_JITTER_RATIO: 0.2
-#    RICH_CROP.SATURATION_JITTER_RATIO: 0.2
-#    RICH_CROP.CONTRAST_JITTER_RATIO: 0.2
+#    RICH_CROP.BLUR_RATIO: 0.1
+#    RICH_CROP.BRIGHTNESS_JITTER_RATIO: 0.5
+#    RICH_CROP.SATURATION_JITTER_RATIO: 0.5
+#    RICH_CROP.CONTRAST_JITTER_RATIO: 0.5
 
-
-BATCH_SIZE: 3
+BATCH_SIZE: 12
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w18_bn_imagenet/"
-    MODEL_SAVE_DIR: "./saved_model/test/"
+    MODEL_SAVE_DIR: "./saved_model/hr18-inter-2/"
+#    SYNC_BATCH_NORM: True
     SNAPSHOT_EPOCH: 4
 TEST:
-    TEST_MODEL: "./saved_model/test/best_model"
+    TEST_MODEL: "./saved_model/hr18-inter-2/best_model"
 SOLVER:
-    NUM_EPOCHS: 50
+    NUM_EPOCHS: 60
     LR: 0.0001
     LR_POLICY: "poly"
     OPTIMIZER: "adam"
-#    LOSS: ["lovasz_softmax_loss","softmax_loss"]
     LOSS: ["softmax_loss", "inter_loss"]
     LOSS_WEIGHT:
-#        LOVASZ_SOFTMAX_LOSS: 0.8
-        SOFTMAX_LOSS: 0.8
-        INTER_LOSS: 0.2
+        SOFTMAX_LOSS: 1
+        INTER_LOSS: 0.05
