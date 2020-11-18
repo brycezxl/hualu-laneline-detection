@@ -263,7 +263,8 @@ def build_model(main_prog, start_prog, phase=ModelPhase.TRAIN):
                     logit = sigmoid_to_softmax(logit)
                 else:
                     logit = softmax(logit)
-                return pred, logit
+
+                return pred, logit, out
 
             if ModelPhase.is_eval(phase):
                 return data_loader, avg_loss, pred, label, mask

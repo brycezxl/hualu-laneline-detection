@@ -30,7 +30,9 @@ import numpy as np
 import paddle.fluid as fluid
 
 from PIL import Image as PILImage
-from utils.config import cfg
+from utils.config import cfg as cfg1
+from utils.config import cfg as cfg2
+
 from reader import SegDataset
 from models.model_builder import build_model
 from models.model_builder import ModelPhase
@@ -41,9 +43,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description='PaddeSeg visualization tools')
     parser.add_argument(
         '--cfg',
-        dest='cfg_file',
+        dest='cfg_file1',
         help='Config file for training (and optionally testing)',
-        default=None,
+        default="./configs/sf-hr18-inter-1.yaml",
+        type=str)
+    parser.add_argument(
+        '--cfg2',
+        dest='cfg_file2',
+        help='Config file for training (and optionally testing)',
+        default="./configs/sf-hr18-inter-1.yaml",
         type=str)
     parser.add_argument(
         '--use_gpu', dest='use_gpu', help='Use gpu or cpu', action='store_true')
@@ -63,9 +71,7 @@ def parse_args():
         help='See config.py for all options',
         default=None,
         nargs=argparse.REMAINDER)
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
+
     return parser.parse_args()
 
 
@@ -84,7 +90,7 @@ def to_png_fn(fn):
     return basename + ".png"
 
 
-def visualize(cfg,
+def visualize(cfg1, cfg2,
               vis_file_list=None,
               use_gpu=False,
               vis_dir="visual",
@@ -93,15 +99,15 @@ def visualize(cfg,
               local_test=False,
               **kwargs):
     if vis_file_list is None:
-        vis_file_list = cfg.DATASET.VIS_FILE_LIST
+        vis_file_list = cfg1.DATASET.VIS_FILE_LIST
     dataset = SegDataset(
         file_list=vis_file_list,
         mode=ModelPhase.VISUAL,
-        data_dir=cfg.DATASET.DATA_DIR)
+        data_dir=cfg1.DATASET.DATA_DIR)
 
     startup_prog = fluid.Program()
     test_prog = fluid.Program()
-    pred, logit = build_model(test_prog, startup_prog, phase=ModelPhase.VISUAL)
+    pred, logit, out = build_model(test_prog, startup_prog, phase=ModelPhase.VISUAL)
     # Clone forward graph
     test_prog = test_prog.clone(for_test=True)
 
@@ -110,31 +116,52 @@ def visualize(cfg,
 
     # Get device environment
     place = fluid.CUDAPlace(0) if use_gpu else fluid.CPUPlace()
-    exe = fluid.Executor(place)
-    exe.run(startup_prog)
 
-    ckpt_dir = cfg.TEST.TEST_MODEL if not ckpt_dir else ckpt_dir
-
+    exe1 = fluid.Executor(place)
+    exe1.run(startup_prog)
+    ckpt_dir = cfg1.TEST.TEST_MODEL if not ckpt_dir else ckpt_dir
     if ckpt_dir is not None:
         print('load test model:', ckpt_dir)
         try:
-            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe)
+            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe1)
         except:
-            fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
-
+            fluid.io.load_params(exe1, ckpt_dir, main_program=test_prog)
     save_dir = vis_dir
     makedirs(save_dir)
 
-    fetch_list = [pred.name]
+    exe2 = fluid.Executor(place)
+    exe2.run(startup_prog)
+    ckpt_dir = cfg2.TEST.TEST_MODEL if not ckpt_dir else ckpt_dir
+    if ckpt_dir is not None:
+        print('load test model:', ckpt_dir)
+        try:
+            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe2)
+        except:
+            fluid.io.load_params(exe2, ckpt_dir, main_program=test_prog)
+    save_dir = vis_dir
+    makedirs(save_dir)
+
+    fetch_list = [out.name]
     test_reader = dataset.batch(dataset.generator, batch_size=1, is_test=True)
     img_cnt = 0
     for imgs, grts, img_names, valid_shapes, org_shapes in test_reader:
         pred_shape = (imgs.shape[2], imgs.shape[3])
-        pred, = exe.run(
+        out1, = exe1.run(
             program=test_prog,
             feed={'image': imgs},
             fetch_list=fetch_list,
             return_numpy=True)
+
+        out2, = exe2.run(
+            program=test_prog,
+            feed={'image': imgs},
+            fetch_list=fetch_list,
+            return_numpy=True)
+
+        out = (out1 + out2) / 2
+        out = np.array(out)
+        pred = np.argmax(out, axis=3)
+        pred = np.expand_dims(pred, -1)
 
         num_imgs = pred.shape[0]
         # TODO: use multi-thread to write images
@@ -177,7 +204,7 @@ def visualize(cfg,
                                      pred_mask_np, epoch)
                 # Original image
                 # BGR->RGB
-                img = cv2.imread(os.path.join(cfg.DATASET.DATA_DIR,
+                img = cv2.imread(os.path.join(cfg1.DATASET.DATA_DIR,
                                               img_name))[..., ::-1]
                 log_writer.add_image("Images/{}".format(img_name), img, epoch)
                 # add ground truth (label) images
@@ -198,11 +225,20 @@ def visualize(cfg,
 
 
 if __name__ == '__main__':
+    os.chdir("../")
     args = parse_args()
-    if args.cfg_file is not None:
-        cfg.update_from_file(args.cfg_file)
+    if args.cfg_file1 is not None:
+        cfg1.update_from_file(args.cfg_file1)
     if args.opts:
-        cfg.update_from_list(args.opts)
-    cfg.check_and_infer()
-    print(pprint.pformat(cfg))
-    visualize(cfg, **args.__dict__)
+        cfg1.update_from_list(args.opts)
+    cfg1.check_and_infer()
+    print(pprint.pformat(cfg1))
+
+    if args.cfg_file2 is not None:
+        cfg2.update_from_file(args.cfg_file2)
+    if args.opts:
+        cfg2.update_from_list(args.opts)
+    cfg2.check_and_infer()
+    print(pprint.pformat(cfg2))
+
+    visualize(cfg1, cfg2, **args.__dict__)
