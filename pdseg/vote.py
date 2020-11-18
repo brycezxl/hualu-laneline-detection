@@ -48,8 +48,8 @@ def parse_args():
         default="./configs/sf-hr18-inter-1.yaml",
         type=str)
     parser.add_argument(
-        '--cfg2',
-        dest='cfg_file2',
+        '--cfga',
+        dest='cfg_filea',
         help='Config file for training (and optionally testing)',
         default="./configs/sf-hr18-inter-1.yaml",
         type=str)
@@ -234,8 +234,8 @@ if __name__ == '__main__':
     cfg1.check_and_infer()
     print(pprint.pformat(cfg1))
 
-    if args.cfg_file2 is not None:
-        cfg2.update_from_file(args.cfg_file2)
+    if args.cfg_filea is not None:
+        cfg2.update_from_file(args.cfg_filea)
     if args.opts:
         cfg2.update_from_list(args.opts)
     cfg2.check_and_infer()
