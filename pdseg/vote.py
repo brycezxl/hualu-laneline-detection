@@ -42,14 +42,14 @@ from tools.gray2pseudo_color import get_color_map_list
 def parse_args():
     parser = argparse.ArgumentParser(description='PaddeSeg visualization tools')
     parser.add_argument(
-        '--cfg',
+        '--cfg1',
         dest='cfg_file1',
         help='Config file for training (and optionally testing)',
         default="./configs/sf-hr18-inter-1.yaml",
         type=str)
     parser.add_argument(
-        '--cfga',
-        dest='cfg_filea',
+        '--cfg2',
+        dest='cfg_file2',
         help='Config file for training (and optionally testing)',
         default="./configs/sf-hr18-inter-1.yaml",
         type=str)
@@ -234,8 +234,8 @@ if __name__ == '__main__':
     cfg1.check_and_infer()
     print(pprint.pformat(cfg1))
 
-    if args.cfg_filea is not None:
-        cfg2.update_from_file(args.cfg_filea)
+    if args.cfg_file2 is not None:
+        cfg2.update_from_file(args.cfg_file2)
     if args.opts:
         cfg2.update_from_list(args.opts)
     cfg2.check_and_infer()

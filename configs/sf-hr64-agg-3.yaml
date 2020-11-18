@@ -2,7 +2,7 @@
 DATASET:
     DATA_DIR: "/home/zxl/hualu-laneline-detection/data/"
     NUM_CLASSES: 20
-    TRAIN_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/total_train_list.txt"
+    TRAIN_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/train_list.txt"
     VAL_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/val_list.txt"
     TEST_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/test_list.txt"
     VIS_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/test_list.txt"
