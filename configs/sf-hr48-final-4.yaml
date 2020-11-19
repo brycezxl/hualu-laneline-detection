@@ -43,7 +43,7 @@ AUG:
 #    RICH_CROP.SATURATION_JITTER_RATIO: 0.2
 #    RICH_CROP.CONTRAST_JITTER_RATIO: 0.2
 
-BATCH_SIZE: 8
+BATCH_SIZE: 20
 TRAIN:
     PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w48_bn_imagenet/"
     MODEL_SAVE_DIR: "./saved_model/hr48-final-4/"
