@@ -69,6 +69,7 @@ def softmax_with_loss(logit,
         weighted_label_one_hot = fluid.layers.elementwise_mul(
             label_one_hot, weight)
         probs = fluid.layers.softmax(logit)
+        # weighted_label_one_hot = weighted_label_one_hot*(1-probs)
         loss = fluid.layers.cross_entropy(
             probs,
             weighted_label_one_hot,
@@ -319,4 +320,27 @@ def multi_bce_loss(logits, label, ignore_mask=None):
             avg_loss += cfg.MODEL.MULTI_LOSS_WEIGHT[i] * loss
     else:
         avg_loss = bce_loss(logits, label, ignore_mask)
+    return avg_loss
+
+def focal_loss(pred, label, ignore_mask=None, num_classes=2, weight=None):
+    ignore_mask = fluid.layers.cast(ignore_mask, 'float32')
+    ignore_mask = fluid.layers.reshape(ignore_mask, [-1, 1])
+    label = fluid.layers.reshape(label, [-1, 1])
+    label = fluid.layers.cast(label, 'int64')
+    one_hot = fluid.layers.one_hot(label, num_classes)
+    pred = fluid.layers.transpose(pred, [0, 2, 3, 1])
+    pred = fluid.layers.reshape(pred, [-1, num_classes])
+    pred = fluid.layers.softmax(pred)
+    prob = one_hot * pred
+    cross_entropy = one_hot * fluid.layers.log(pred)
+    cross_entropy = fluid.layers.reduce_sum(cross_entropy, dim=-1)
+    sum = fluid.layers.sum(cross_entropy)
+    weight = -1.0 * one_hot * (1.0 - pred)
+    weight = fluid.layers.reduce_sum(weight, dim=-1)
+    loss = weight * cross_entropy
+    loss = loss * ignore_mask
+    avg_loss = fluid.layers.mean(loss) / (fluid.layers.mean(ignore_mask) + cfg.MODEL.DEFAULT_EPSILON)
+    label.stop_gradient = True
+    ignore_mask.stop_gradient = True
+
     return avg_loss

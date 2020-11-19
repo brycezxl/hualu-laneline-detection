@@ -10,7 +10,7 @@ DATASET:
 # 预训练模型配置
 MODEL:
     MODEL_NAME: "hrnet"
-    DEFAULT_NORM_TYPE: "bn"
+    DEFAULT_NORM_TYPE: "bn" 
     HRNET:
         STAGE2:
             NUM_CHANNELS: [48, 96]
