@@ -9,7 +9,7 @@ DATASET:
 
 # 预训练模型配置
 MODEL:
-    MODEL_NAME: "mt-hrnet"
+    MODEL_NAME: "hrnet"
     DEFAULT_NORM_TYPE: "bn"
     HRNET:
         STAGE2:
