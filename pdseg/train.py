@@ -430,8 +430,10 @@ def train(cfg):
                         ckpt_dir,
                         os.path.join(cfg.TRAIN.MODEL_SAVE_DIR, 'best_model'),
                         mean_iou))
-
-            del_file(ckpt_dir)
+                    if epoch < 40:
+                        del_file(ckpt_dir)
+                else:
+                    del_file(ckpt_dir)
 
             # Use VisualDL to visualize results
             # if args.use_vdl and cfg.DATASET.VIS_FILE_LIST is not None:
