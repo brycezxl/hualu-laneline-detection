@@ -131,7 +131,7 @@ def visualize(cfg,
               local_test=False,
               **kwargs):
     if vis_file_list is None:
-        vis_file_list = cfg.DATASET.VAL_FILE_LIST
+        vis_file_list = cfg.DATASET.VIS_FILE_LIST
     dataset = SegDataset(
         file_list=vis_file_list,
         mode=ModelPhase.VISUAL,
@@ -173,7 +173,6 @@ def visualize(cfg,
             feed={'image': imgs},
             fetch_list=fetch_list,
             return_numpy=True)
-        loss = cross_entropy(logit, grts)
 
         num_imgs = pred.shape[0]
         # TODO: use multi-thread to write images
@@ -193,7 +192,6 @@ def visualize(cfg,
                 interpolation=cv2.INTER_NEAREST)
 
             png_fn = to_png_fn(img_name)
-            png_fn = "%.5f-" % loss + png_fn
             # colorful segment result visualization
             vis_fn = os.path.join(save_dir, png_fn)
             dirname = os.path.dirname(vis_fn)
@@ -213,22 +211,11 @@ def visualize(cfg,
             im_ori = PILImage.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
             # log_writer.add_image("Images/{}".format(img_name), img, epoch)
             # add ground truth (label) images
-            grt = grts[i]
-            grt = grt[0:valid_shape[0], 0:valid_shape[1]]
-            grt_pil = PILImage.fromarray(grt.astype(np.uint8), mode='P')
-            grt_pil.putpalette(color_map)
-            grt_pil = grt_pil.resize((org_shape[1], org_shape[0]))
-            grt = np.array(grt_pil.convert("RGB"))
-            im_grt = PILImage.fromarray(grt)
 
-            im_grt_cat = PILImage.blend(im_ori, im_grt, 0.5)
             im_pred_cat = PILImage.blend(im_ori, im_pred, 0.5)
-
             im_ori = join(im_ori, im_ori, flag="vertical")
-            im_grt_cat = join(im_grt_cat, im_grt, flag="vertical")
             im_pred_cat = join(im_pred_cat, im_pred, flag="vertical")
-            new_img = join(im_ori, im_grt_cat)
-            new_img = join(new_img, im_pred_cat)
+            new_img = join(im_ori, im_pred_cat)
             new_img.save(vis_fn)
 
             img_cnt += 1

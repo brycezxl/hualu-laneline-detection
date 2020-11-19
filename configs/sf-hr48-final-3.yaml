@@ -1,0 +1,64 @@
+# 数据集配置
+DATASET:
+    DATA_DIR: "/home/zxl/hualu-laneline-detection/data/"
+    NUM_CLASSES: 20
+    TRAIN_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/aug_list.txt"
+    VAL_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/val_list.txt"
+    TEST_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/testB_list.txt"
+    VIS_FILE_LIST: "/home/zxl/hualu-laneline-detection/data/testB_list.txt"
+
+# 预训练模型配置
+MODEL:
+    MODEL_NAME: "mt-hrnet"
+    DEFAULT_NORM_TYPE: "bn"
+    HRNET:
+        STAGE2:
+            NUM_CHANNELS: [48, 96]
+        STAGE3:
+            NUM_CHANNELS: [48, 96, 192]
+        STAGE4:
+            NUM_CHANNELS: [48, 96, 192, 384]
+
+# 其他配置
+MEAN: [0.485, 0.456, 0.406]
+STD: [0.229, 0.224, 0.225]
+
+TRAIN_CROP_SIZE: (512, 512)
+EVAL_CROP_SIZE: (910, 512)
+
+AUG:
+    AUG_METHOD: "unpadding"
+    FIX_RESIZE_SIZE: (910, 512)
+
+    MIRROR: True
+
+    RICH_CROP.ENABLE: True
+    RICH_CROP.MIN_AREA_RATIO: 0.6
+    RICH_CROP.ASPECT_RATIO: 0.6
+
+#    RICH_CROP.ENABLE: True
+#    RICH_CROP.BLUR: True
+#    RICH_CROP.BLUR_RATIO: 0.2
+#    RICH_CROP.BRIGHTNESS_JITTER_RATIO: 0.2
+#    RICH_CROP.SATURATION_JITTER_RATIO: 0.2
+#    RICH_CROP.CONTRAST_JITTER_RATIO: 0.2
+
+BATCH_SIZE: 15
+TRAIN:
+    PRETRAINED_MODEL_DIR: "./pretrained_model/hrnet_w48_bn_imagenet/"
+    MODEL_SAVE_DIR: "./saved_model/hr48-final-3/"
+    SYNC_BATCH_NORM: True
+    SNAPSHOT_EPOCH: 4
+TEST:
+    TEST_MODEL: "./saved_model/hr48-final-3/best_model"
+SOLVER:
+    NUM_EPOCHS: 50
+    LR: 0.00008
+    LR_POLICY: "cosine"
+    OPTIMIZER: "adam"
+    CROSS_ENTROPY_WEIGHT: [1.42832, 3.87721, 6.40887, 3.75847, 6.50778, 8.44444, 7.07945, 7.28573, 5.13516, 5.22574, 6.43291, 12.36548, 9.38901, 6.91164, 8.83121, 10.65694, 10.90422, 12.30261, 13.69525, 3.82757]
+    LOSS: ["softmax_loss", "inter_loss", "lane_width_loss"]
+    LOSS_WEIGHT:
+        SOFTMAX_LOSS: 1
+        INTER_LOSS: 0.05
+        LANE_WIDTH_LOSS: 0.1
