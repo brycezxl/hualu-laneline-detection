@@ -119,7 +119,7 @@ def visualize(cfg1, cfg2,
 
     exe1 = fluid.Executor(place)
     exe1.run(startup_prog)
-    ckpt_dir = cfg1.TEST.TEST_MODEL if not ckpt_dir else ckpt_dir
+    ckpt_dir = cfg1.TEST.TEST_MODEL
     if ckpt_dir is not None:
         print('load test model:', ckpt_dir)
         try:
@@ -131,7 +131,7 @@ def visualize(cfg1, cfg2,
 
     exe2 = fluid.Executor(place)
     exe2.run(startup_prog)
-    ckpt_dir = cfg2.TEST.TEST_MODEL if not ckpt_dir else ckpt_dir
+    ckpt_dir = cfg2.TEST.TEST_MODEL
     if ckpt_dir is not None:
         print('load test model:', ckpt_dir)
         try:
