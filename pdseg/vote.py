@@ -30,8 +30,7 @@ import numpy as np
 import paddle.fluid as fluid
 
 from PIL import Image as PILImage
-from utils.config import cfg as cfg1
-from utils.config import cfg as cfg2
+from utils.config import cfg
 
 from reader import SegDataset
 from models.model_builder import build_model
@@ -42,14 +41,8 @@ from tools.gray2pseudo_color import get_color_map_list
 def parse_args():
     parser = argparse.ArgumentParser(description='PaddeSeg visualization tools')
     parser.add_argument(
-        '--cfg1',
-        dest='cfg_file1',
-        help='Config file for training (and optionally testing)',
-        default="./configs/sf-hr18-inter-1.yaml",
-        type=str)
-    parser.add_argument(
-        '--cfg2',
-        dest='cfg_file2',
+        '--cfg',
+        dest='cfg_file',
         help='Config file for training (and optionally testing)',
         default="./configs/sf-hr18-inter-1.yaml",
         type=str)
@@ -90,7 +83,7 @@ def to_png_fn(fn):
     return basename + ".png"
 
 
-def visualize(cfg1, cfg2,
+def visualize(cfg1,
               vis_file_list=None,
               use_gpu=False,
               vis_dir="visual",
@@ -103,7 +96,7 @@ def visualize(cfg1, cfg2,
     dataset = SegDataset(
         file_list=vis_file_list,
         mode=ModelPhase.VISUAL,
-        data_dir=cfg1.DATASET.DATA_DIR)
+        data_dir=cfg.DATASET.DATA_DIR)
 
     startup_prog = fluid.Program()
     test_prog = fluid.Program()
@@ -117,48 +110,29 @@ def visualize(cfg1, cfg2,
     # Get device environment
     place = fluid.CUDAPlace(0) if use_gpu else fluid.CPUPlace()
 
-    exe1 = fluid.Executor(place)
-    exe1.run(startup_prog)
+    exe = fluid.Executor(place)
+    exe.run(startup_prog)
     ckpt_dir = cfg1.TEST.TEST_MODEL
     if ckpt_dir is not None:
         print('load test model:', ckpt_dir)
         try:
-            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe1)
+            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe)
         except:
-            fluid.io.load_params(exe1, ckpt_dir, main_program=test_prog)
+            fluid.io.load_params(exe, ckpt_dir, main_program=test_prog)
     save_dir = vis_dir
     makedirs(save_dir)
 
-    exe2 = fluid.Executor(place)
-    exe2.run(startup_prog)
-    ckpt_dir = cfg2.TEST.TEST_MODEL
-    if ckpt_dir is not None:
-        print('load test model:', ckpt_dir)
-        try:
-            fluid.load(test_prog, os.path.join(ckpt_dir, 'model'), exe2)
-        except:
-            fluid.io.load_params(exe2, ckpt_dir, main_program=test_prog)
-    save_dir = vis_dir
-    makedirs(save_dir)
-
-    fetch_list = [out.name]
+    fetch_list = [pred.name, out.name]
     test_reader = dataset.batch(dataset.generator, batch_size=1, is_test=True)
     img_cnt = 0
     for imgs, grts, img_names, valid_shapes, org_shapes in test_reader:
         pred_shape = (imgs.shape[2], imgs.shape[3])
-        out1, = exe1.run(
+        pred, out, = exe.run(
             program=test_prog,
             feed={'image': imgs},
             fetch_list=fetch_list,
             return_numpy=True)
 
-        out2, = exe2.run(
-            program=test_prog,
-            feed={'image': imgs},
-            fetch_list=fetch_list,
-            return_numpy=True)
-
-        out = (out1 + out2) / 2
         out = np.array(out)
         pred = np.argmax(out, axis=3)
         pred = np.expand_dims(pred, -1)
@@ -228,17 +202,10 @@ if __name__ == '__main__':
     os.chdir("../")
     args = parse_args()
     if args.cfg_file1 is not None:
-        cfg1.update_from_file(args.cfg_file1)
+        cfg.update_from_file(args.cfg_file)
     if args.opts:
-        cfg1.update_from_list(args.opts)
+        cfg.update_from_list(args.opts)
     cfg1.check_and_infer()
     print(pprint.pformat(cfg1))
 
-    if args.cfg_file2 is not None:
-        cfg2.update_from_file(args.cfg_file2)
-    if args.opts:
-        cfg2.update_from_list(args.opts)
-    cfg2.check_and_infer()
-    print(pprint.pformat(cfg2))
-
-    visualize(cfg1, cfg2, **args.__dict__)
+    visualize(cfg, **args.__dict__)

@@ -139,7 +139,7 @@ def visualize(cfg,
 
     startup_prog = fluid.Program()
     test_prog = fluid.Program()
-    pred, logit, out = build_model(test_prog, startup_prog, phase=ModelPhase.VISUAL)
+    pred, logit = build_model(test_prog, startup_prog, phase=ModelPhase.VISUAL)
     # Clone forward graph
     test_prog = test_prog.clone(for_test=True)
 
